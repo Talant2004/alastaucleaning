@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Reveal } from "@/components/ui/Reveal";
 
@@ -9,7 +10,30 @@ type Testimonial = { name: string; context: string; quote: string };
 export function SocialProofSection() {
   const t = useTranslations("socialProof");
   const guarantees = t.raw("guarantees") as Guarantee[];
-  const testimonials = t.raw("testimonials") as Testimonial[];
+  const fallback = t.raw("testimonials") as Testimonial[];
+  const [testimonials, setTestimonials] = useState(fallback);
+
+  useEffect(() => {
+    let cancelled = false;
+    void fetch("/api/reviews")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: { reviews?: Testimonial[] } | null) => {
+        if (cancelled || !data?.reviews?.length) return;
+        setTestimonials(
+          data.reviews.map((item) => ({
+            name: item.name,
+            context: item.context,
+            quote: item.quote,
+          })),
+        );
+      })
+      .catch(() => {
+        /* оставляем тексты из messages */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <section id="reviews" className="border-y border-[var(--hairline)] py-24 md:py-32">
@@ -28,7 +52,7 @@ export function SocialProofSection() {
           </Reveal>
 
           {testimonials.map((item, index) => (
-            <Reveal as="article" key={item.name} index={index + 1} className="surface flex flex-col p-6">
+            <Reveal as="article" key={`${item.name}-${index}`} index={index + 1} className="surface flex flex-col p-6">
               <div className="flex items-center gap-3">
                 <span
                   aria-hidden

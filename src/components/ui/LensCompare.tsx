@@ -98,6 +98,13 @@ export function LensCompare({ beforeBrief, afterBrief, radius = 140 }: Props) {
       onKeyDown={(event) => {
         if (event.key === "ArrowRight") x.set(Math.min(96, x.get() + 6));
         if (event.key === "ArrowLeft") x.set(Math.max(4, x.get() - 6));
+        if (event.key === "ArrowDown") y.set(Math.min(96, y.get() + 6));
+        if (event.key === "ArrowUp") y.set(Math.max(4, y.get() - 6));
+        if (event.key === "Escape") {
+          x.set(36);
+          y.set(48);
+          r.set(reduce ? 999 : lensRadius);
+        }
       }}
       className="media-frame group aspect-[4/3] cursor-crosshair touch-none select-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[var(--color-sage-600)]"
     >

@@ -5,13 +5,9 @@ import { motion } from "motion/react";
 import { useLocale, useTranslations } from "next-intl";
 import {
   AREA_PRESETS,
-  ALASTAU_OPTION_PRICE,
-  BALCONY_FLAT_PRICE,
-  BALCONY_STANDARD_M2,
   CLEANING_TYPES,
   EXTRAS,
   formatTenge,
-  getCleaningType,
   isAlastauFree,
 } from "@/lib/pricing";
 import { easeBrand } from "@/lib/motion";
@@ -25,6 +21,7 @@ export function CalculatorSection() {
   const locale = useLocale();
   const {
     state,
+    pricing,
     setType,
     setArea,
     toggleBalcony,
@@ -33,14 +30,18 @@ export function CalculatorSection() {
     toggleAlastau,
   } = useEstimate();
   const [booking, setBooking] = useState(false);
-  const cleaningType = getCleaningType(state.type);
-  const balconyOversize = state.balconyArea > BALCONY_STANDARD_M2;
+  const perM2 = pricing.perM2[state.type];
+  const balconyOversize = state.balconyArea > pricing.balconyStandardM2;
   const balconyAmount = balconyOversize
-    ? state.balconyArea * cleaningType.perM2
-    : BALCONY_FLAT_PRICE;
+    ? state.balconyArea * perM2
+    : pricing.balconyFlat;
+  const alastauPrice = pricing.alastauOptionPrice;
 
   return (
-    <section id="calc" className="shell py-24 md:py-32">
+    <section
+      id="calc"
+      className="shell pb-[calc(7.5rem+env(safe-area-inset-bottom))] pt-24 md:py-32"
+    >
       <div className="max-w-[62ch]">
         <p className="eyebrow">{t("eyebrow")}</p>
         <h2 className="h2 mt-5">{t("h2")}</h2>
@@ -79,7 +80,7 @@ export function CalculatorSection() {
                       {locale === "kz" ? type.kz : type.ru}
                     </span>
                     <span className="nums mt-3 block text-sm text-[var(--color-sage-600)]">
-                      {type.perM2} ₸ / м²
+                      {pricing.perM2[type.id]} ₸ / м²
                     </span>
                     <span className="muted mt-2 block text-xs">{type.tagline}</span>
                   </button>
@@ -148,9 +149,9 @@ export function CalculatorSection() {
                   {t("addBalcony")}
                   <span className="muted block text-xs">
                     {t("balconyHint", {
-                      standard: BALCONY_STANDARD_M2,
-                      flat: formatTenge(BALCONY_FLAT_PRICE),
-                      rate: cleaningType.perM2,
+                      standard: pricing.balconyStandardM2,
+                      flat: formatTenge(pricing.balconyFlat),
+                      rate: perM2,
                     })}
                   </span>
                 </span>
@@ -184,8 +185,8 @@ export function CalculatorSection() {
 
                   <p className="nums shrink-0 text-sm text-[var(--color-sage-600)]">
                     {balconyOversize
-                      ? `${state.balconyArea} м² × ${cleaningType.perM2} ₸ = ${formatTenge(balconyAmount)}`
-                      : `${state.balconyArea} м² · ${formatTenge(BALCONY_FLAT_PRICE)}`}
+                      ? `${state.balconyArea} м² × ${perM2} ₸ = ${formatTenge(balconyAmount)}`
+                      : `${state.balconyArea} м² · ${formatTenge(pricing.balconyFlat)}`}
                   </p>
                 </div>
               )}
@@ -198,13 +199,17 @@ export function CalculatorSection() {
             <ul className="mt-4 grid gap-2 sm:grid-cols-2">
               {EXTRAS.map((extra) => {
                 const qty = state.extras[extra.id] ?? 0;
-                const custom = extra.price === null;
+                const price =
+                  pricing.extras[extra.id] !== undefined
+                    ? pricing.extras[extra.id]!
+                    : extra.price;
+                const custom = price === null;
 
                 return (
                   <li
                     key={extra.id}
                     className={`surface flex items-center justify-between gap-4 p-4 transition-colors duration-400 ${
-                      qty > 0 ? "border-[var(--color-sage-400)]" : ""
+                      qty > 0 ? "border-[var(--color-sage-600)]" : ""
                     }`}
                   >
                     <div className="min-w-0">
@@ -212,7 +217,7 @@ export function CalculatorSection() {
                       <p className="nums muted text-xs">
                         {custom
                           ? t("onSite")
-                          : `${extra.from ? "от " : ""}${formatTenge(extra.price!)} / ${extra.unit}`}
+                          : `${extra.from ? "от " : ""}${formatTenge(price!)} / ${extra.unit}`}
                         {locale === "kz" && extra.kz ? (
                           <span className="mt-0.5 block opacity-70">{extra.kz}</span>
                         ) : null}
@@ -267,9 +272,9 @@ export function CalculatorSection() {
               >
                 {isAlastauFree(state.type)
                   ? t("gift")
-                  : ALASTAU_OPTION_PRICE === null
+                  : alastauPrice === null
                     ? t("clarify")
-                    : formatTenge(ALASTAU_OPTION_PRICE)}
+                    : formatTenge(alastauPrice)}
               </span>
             </motion.div>
           </fieldset>

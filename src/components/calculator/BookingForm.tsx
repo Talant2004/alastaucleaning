@@ -1,43 +1,59 @@
 ﻿"use client";
 
 import { Link } from "@/i18n/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "motion/react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { easeBrand } from "@/lib/motion";
 import { track } from "@/lib/analytics";
 import { CONTACT, waLink } from "@/lib/contact";
+import { fallbackSlots, type DayOption, type SlotsPayload } from "@/lib/slots";
 import { useEstimate } from "./estimate-store";
-
-const TIME_SLOTS = ["09:00", "11:00", "13:00", "15:00", "17:00"];
-
-function nextDays(count: number) {
-  const formatter = new Intl.DateTimeFormat("ru-KZ", { day: "numeric", month: "short" });
-  const weekday = new Intl.DateTimeFormat("ru-KZ", { weekday: "short" });
-
-  return Array.from({ length: count }, (_, i) => {
-    const date = new Date();
-    date.setDate(date.getDate() + i + 1);
-    return {
-      iso: date.toISOString().slice(0, 10),
-      label: formatter.format(date),
-      weekday: weekday.format(date),
-    };
-  });
-}
 
 export function BookingForm({ onClose }: { onClose: () => void }) {
   const t = useTranslations("booking");
-  const { whatsappText } = useEstimate();
-  const days = nextDays(7);
+  const locale = useLocale();
+  const { state, estimate, whatsappText } = useEstimate();
+  const initial = fallbackSlots(locale === "kz" ? "kk-KZ" : "ru-KZ");
 
-  const [date, setDate] = useState(days[0].iso);
-  const [time, setTime] = useState(TIME_SLOTS[1]);
+  const [slots, setSlots] = useState<SlotsPayload>(initial);
+  const [date, setDate] = useState(initial.days[0]?.iso ?? "");
+  const [time, setTime] = useState(initial.times[1] ?? initial.times[0] ?? "11:00");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
 
-  const selectedDay = days.find((day) => day.iso === date);
+  useEffect(() => {
+    let cancelled = false;
+
+    void fetch(`/api/slots?locale=${locale}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: SlotsPayload | null) => {
+        if (cancelled || !data?.days?.length || !data.times?.length) return;
+        setSlots(data);
+        setDate((prev) => (data.days.some((d) => d.iso === prev) ? prev : data.days[0].iso));
+        setTime((prev) => (data.times.includes(prev) ? prev : data.times[1] ?? data.times[0]));
+      })
+      .catch(() => {
+        /* fallback already in state */
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [locale]);
+
+  const selectedDay: DayOption | undefined = slots.days.find((day) => day.iso === date);
+  const timeOptions = selectedDay?.times?.length ? selectedDay.times : slots.times;
+  const timeOptionsKey = timeOptions.join("|");
+
+  useEffect(() => {
+    const options = timeOptionsKey.split("|").filter(Boolean);
+    if (!options.length) return;
+    if (!options.includes(time)) {
+      setTime(options[1] ?? options[0] ?? "11:00");
+    }
+  }, [time, timeOptionsKey]);
 
   const message = [
     whatsappText(),
@@ -49,6 +65,36 @@ export function BookingForm({ onClose }: { onClose: () => void }) {
   ]
     .filter(Boolean)
     .join("\n");
+
+  function submitBooking() {
+    track("booking_submit", { date, time, hasName: Boolean(name) });
+
+    void fetch("/api/booking", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        date,
+        time,
+        name,
+        phone,
+        address,
+        message,
+        locale,
+        estimate: {
+          type: state.type,
+          area: state.area,
+          balcony: state.balcony,
+          balconyArea: state.balconyArea,
+          extras: state.extras,
+          alastau: state.alastau,
+          total: estimate.total,
+          hasCustomItems: estimate.hasCustomItems,
+        },
+      }),
+    }).catch(() => {
+      /* WhatsApp всё равно открывается — Firestore не блокирует бронь */
+    });
+  }
 
   return (
     <motion.div
@@ -75,7 +121,7 @@ export function BookingForm({ onClose }: { onClose: () => void }) {
       <fieldset className="mt-6">
         <legend className="eyebrow">{t("date")}</legend>
         <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
-          {days.map((day) => (
+          {slots.days.map((day) => (
             <button
               key={day.iso}
               type="button"
@@ -97,7 +143,7 @@ export function BookingForm({ onClose }: { onClose: () => void }) {
       <fieldset className="mt-6">
         <legend className="eyebrow">{t("time")}</legend>
         <div className="mt-3 flex flex-wrap gap-2">
-          {TIME_SLOTS.map((slot) => (
+          {timeOptions.map((slot) => (
             <button
               key={slot}
               type="button"
@@ -118,14 +164,20 @@ export function BookingForm({ onClose }: { onClose: () => void }) {
       <div className="mt-6 grid gap-3 sm:grid-cols-2">
         <Field label={t("name")} value={name} onChange={setName} placeholder={t("namePh")} />
         <Field label={t("phone")} value={phone} onChange={setPhone} placeholder={t("phonePh")} type="tel" />
-        <Field label={t("address")} value={address} onChange={setAddress} placeholder={t("addressPh")} className="sm:col-span-2" />
+        <Field
+          label={t("address")}
+          value={address}
+          onChange={setAddress}
+          placeholder={t("addressPh")}
+          className="sm:col-span-2"
+        />
       </div>
 
       <a
         {...waLink("estimate", message)}
         target="_blank"
         rel="noopener noreferrer"
-        onClick={() => track("booking_submit", { date, time, hasName: Boolean(name) })}
+        onClick={submitBooking}
         className="btn btn-primary mt-7 w-full"
       >
         {t("submit")}

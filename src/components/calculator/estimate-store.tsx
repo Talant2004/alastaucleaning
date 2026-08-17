@@ -1,12 +1,21 @@
 "use client";
 
-import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import {
   calculateEstimate,
+  defaultEstimatePricing,
   formatTenge,
   getCleaningType,
   isAlastauFree,
   type CleaningTypeId,
+  type EstimatePricing,
   type EstimateState,
   type ExtraId,
   EXTRAS,
@@ -25,6 +34,7 @@ const INITIAL: EstimateState = {
 type EstimateContextValue = {
   state: EstimateState;
   estimate: ReturnType<typeof calculateEstimate>;
+  pricing: EstimatePricing;
   touched: boolean;
   setType: (type: CleaningTypeId) => void;
   setArea: (area: number) => void;
@@ -40,6 +50,25 @@ const EstimateContext = createContext<EstimateContextValue | null>(null);
 export function EstimateProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<EstimateState>(INITIAL);
   const [touched, setTouched] = useState(false);
+  const [pricing, setPricing] = useState<EstimatePricing>(defaultEstimatePricing);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    void fetch("/api/settings/pricing")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: { pricing?: EstimatePricing } | null) => {
+        if (cancelled || !data?.pricing) return;
+        setPricing(data.pricing);
+      })
+      .catch(() => {
+        /* фолбэк на pricing.ts */
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const markTouched = useCallback(() => {
     setTouched((prev) => {
@@ -71,12 +100,9 @@ export function EstimateProvider({ children }: { children: React.ReactNode }) {
     setState((prev) => ({ ...prev, balcony: !prev.balcony }));
   }, [markTouched]);
 
-  const setBalconyArea = useCallback(
-    (area: number) => {
-      setState((prev) => ({ ...prev, balconyArea: Math.min(40, Math.max(2, Math.round(area))) }));
-    },
-    [],
-  );
+  const setBalconyArea = useCallback((area: number) => {
+    setState((prev) => ({ ...prev, balconyArea: Math.min(40, Math.max(2, Math.round(area))) }));
+  }, []);
 
   const setExtra = useCallback(
     (id: ExtraId, qty: number) => {
@@ -97,7 +123,7 @@ export function EstimateProvider({ children }: { children: React.ReactNode }) {
     });
   }, [markTouched]);
 
-  const estimate = useMemo(() => calculateEstimate(state), [state]);
+  const estimate = useMemo(() => calculateEstimate(state, pricing), [state, pricing]);
 
   const whatsappText = useCallback(() => {
     const type = getCleaningType(state.type);
@@ -122,6 +148,7 @@ export function EstimateProvider({ children }: { children: React.ReactNode }) {
     () => ({
       state,
       estimate,
+      pricing,
       touched,
       setType,
       setArea,
@@ -134,6 +161,7 @@ export function EstimateProvider({ children }: { children: React.ReactNode }) {
     [
       state,
       estimate,
+      pricing,
       touched,
       setType,
       setArea,

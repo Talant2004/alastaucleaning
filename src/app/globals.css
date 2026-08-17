@@ -79,7 +79,7 @@
 :root[data-theme="day"] {
   --bg: var(--color-linen);
   --fg: var(--color-ink);
-  --fg-muted: color-mix(in oklab, var(--color-ink) 62%, transparent);
+  --fg-muted: color-mix(in oklab, var(--color-ink) 72%, transparent);
   --hairline: color-mix(in oklab, var(--color-ink) 14%, transparent);
   --surface: #fffdfa;
 }
@@ -87,7 +87,7 @@
 :root[data-theme="night"] {
   --bg: var(--color-obsidian);
   --fg: var(--color-on-dark);
-  --fg-muted: color-mix(in oklab, var(--color-on-dark) 58%, transparent);
+  --fg-muted: color-mix(in oklab, var(--color-on-dark) 70%, transparent);
   --hairline: color-mix(in oklab, var(--color-brass) 34%, transparent);
   --surface: var(--color-obsidian-2);
 }
@@ -130,6 +130,17 @@
   select {
     font: inherit;
     color: inherit;
+  }
+
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  [role="switch"]:focus-visible,
+  [tabindex]:focus-visible {
+    outline: 2px solid var(--color-sage-600);
+    outline-offset: 3px;
   }
 
   /* Плавный скролл только по якорям — инерцию даёт Lenis */

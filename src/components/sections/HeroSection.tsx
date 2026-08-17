@@ -1,16 +1,41 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { CONTACT } from "@/lib/contact";
 import { easeBrand } from "@/lib/motion";
+import { FALLBACK_SLOT_CAPACITY } from "@/lib/slots";
 import { RevealLines } from "@/components/ui/Reveal";
 import { WhatsAppButton } from "@/components/contact/WhatsAppButton";
 
 export function HeroSection() {
   const t = useTranslations("hero");
+  const locale = useLocale();
   const ref = useRef<HTMLElement>(null);
+  const [slotCapacity, setSlotCapacity] = useState(FALLBACK_SLOT_CAPACITY);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    void fetch(`/api/slots?locale=${locale}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: { free?: number; total?: number } | null) => {
+        if (cancelled || !data) return;
+        const free = Number(data.free);
+        const total = Number(data.total);
+        if (!Number.isFinite(free) || !Number.isFinite(total)) return;
+        setSlotCapacity({ free: Math.max(0, Math.round(free)), total: Math.max(0, Math.round(total)) });
+      })
+      .catch(() => {
+        /* оставляем фолбэк 3 из 14 */
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [locale]);
+
   const reduce = useReducedMotion();
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const y = useTransform(scrollYProgress, [0, 1], ["0%", reduce ? "0%" : "14%"]);
@@ -130,7 +155,9 @@ export function HeroSection() {
         className="glass shell pointer-events-none mt-10 hidden rounded-[var(--radius-card)] px-6 py-4 lg:mx-auto lg:mt-0 lg:block lg:w-auto lg:max-w-xs lg:self-end"
       >
         <p className="eyebrow text-[0.6rem]">{t("slotsEyebrow")}</p>
-        <p className="nums mt-1 text-2xl">3 из 14</p>
+        <p className="nums mt-1 text-2xl">
+          {slotCapacity.free} из {slotCapacity.total}
+        </p>
         <p className="muted mt-1 text-xs">{t("slotsNote")}</p>
       </motion.aside>
     </section>

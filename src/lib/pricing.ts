@@ -141,29 +141,57 @@ export function isAlastauFree(type: CleaningTypeId) {
   return type === "general" || type === "postRepair";
 }
 
-export function calculateEstimate(state: EstimateState): Estimate {
+export type EstimatePricing = {
+  perM2: Record<CleaningTypeId, number>;
+  balconyFlat: number;
+  balconyStandardM2: number;
+  alastauOptionPrice: number | null;
+  extras: Partial<Record<ExtraId, number | null>>;
+};
+
+export function defaultEstimatePricing(): EstimatePricing {
+  return {
+    perM2: {
+      wet: getCleaningType("wet").perM2,
+      general: getCleaningType("general").perM2,
+      postRepair: getCleaningType("postRepair").perM2,
+    },
+    balconyFlat: BALCONY_FLAT_PRICE,
+    balconyStandardM2: BALCONY_STANDARD_M2,
+    alastauOptionPrice: ALASTAU_OPTION_PRICE,
+    extras: Object.fromEntries(EXTRAS.map((e) => [e.id, e.price])) as Partial<
+      Record<ExtraId, number | null>
+    >,
+  };
+}
+
+export function calculateEstimate(
+  state: EstimateState,
+  pricing: EstimatePricing = defaultEstimatePricing(),
+): Estimate {
   const type = getCleaningType(state.type);
+  const perM2 = pricing.perM2[state.type];
   const lines: EstimateLine[] = [];
 
-  const baseAmount = type.perM2 * state.area;
+  const baseAmount = perM2 * state.area;
   lines.push({
     id: "base",
     title: type.ru,
-    note: `${state.area} м² × ${type.perM2} ₸`,
+    note: `${state.area} м² × ${perM2} ₸`,
     amount: baseAmount,
   });
 
   if (state.balcony) {
-    const oversize = state.balconyArea > BALCONY_STANDARD_M2;
-    // Стандарт: всегда пишем м² + фикс 5 000 ₸.
+    const oversize = state.balconyArea > pricing.balconyStandardM2;
+    // Стандарт: всегда пишем м² + фикс.
     // Больше среднего: как квартира — площадь × тариф выбранной уборки.
     lines.push({
       id: "balcony",
       title: "Балкон",
       note: oversize
-        ? `${state.balconyArea} м² × ${type.perM2} ₸`
-        : `${state.balconyArea} м² · стандарт до ${BALCONY_STANDARD_M2} м² — ${BALCONY_FLAT_PRICE.toLocaleString("ru-KZ")} ₸`,
-      amount: oversize ? state.balconyArea * type.perM2 : BALCONY_FLAT_PRICE,
+        ? `${state.balconyArea} м² × ${perM2} ₸`
+        : `${state.balconyArea} м² · стандарт до ${pricing.balconyStandardM2} м² — ${pricing.balconyFlat.toLocaleString("ru-KZ")} ₸`,
+      amount: oversize ? state.balconyArea * perM2 : pricing.balconyFlat,
     });
   }
 
@@ -173,7 +201,10 @@ export function calculateEstimate(state: EstimateState): Estimate {
     const qty = state.extras[extra.id] ?? 0;
     if (qty <= 0) continue;
 
-    if (extra.price === null) {
+    const price =
+      pricing.extras[extra.id] !== undefined ? pricing.extras[extra.id]! : extra.price;
+
+    if (price === null) {
       hasCustomItems = true;
       lines.push({ id: extra.id, title: extra.title, note: "рассчитаем на объекте", amount: null });
       continue;
@@ -182,8 +213,8 @@ export function calculateEstimate(state: EstimateState): Estimate {
     lines.push({
       id: extra.id,
       title: extra.title,
-      note: `${qty} ${extra.unit} × ${extra.from ? "от " : ""}${extra.price.toLocaleString("ru-KZ")} ₸`,
-      amount: qty * extra.price,
+      note: `${qty} ${extra.unit} × ${extra.from ? "от " : ""}${price.toLocaleString("ru-KZ")} ₸`,
+      amount: qty * price,
     });
   }
 
@@ -196,7 +227,7 @@ export function calculateEstimate(state: EstimateState): Estimate {
         note: "в подарок к вашей уборке",
         amount: 0,
       });
-    } else if (ALASTAU_OPTION_PRICE === null) {
+    } else if (pricing.alastauOptionPrice === null) {
       hasCustomItems = true;
       lines.push({
         id: "alastau",
@@ -209,7 +240,7 @@ export function calculateEstimate(state: EstimateState): Estimate {
         id: "alastau",
         title: "Обряд «Аластау»",
         note: "окуривание адыраспаном",
-        amount: ALASTAU_OPTION_PRICE,
+        amount: pricing.alastauOptionPrice,
       });
     }
   }
