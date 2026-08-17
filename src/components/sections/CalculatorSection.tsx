@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "motion/react";
+import { useLocale, useTranslations } from "next-intl";
 import {
   AREA_PRESETS,
   ALASTAU_OPTION_PRICE,
@@ -13,7 +14,6 @@ import {
   getCleaningType,
   isAlastauFree,
 } from "@/lib/pricing";
-import { WA_TEXTS } from "@/lib/contact";
 import { easeBrand } from "@/lib/motion";
 import { useEstimate } from "@/components/calculator/estimate-store";
 import { EstimateReceipt } from "@/components/calculator/EstimateReceipt";
@@ -21,6 +21,8 @@ import { BookingForm } from "@/components/calculator/BookingForm";
 import { WhatsAppButton, PhoneLink } from "@/components/contact/WhatsAppButton";
 
 export function CalculatorSection() {
+  const t = useTranslations("calculator");
+  const locale = useLocale();
   const {
     state,
     setType,
@@ -40,18 +42,16 @@ export function CalculatorSection() {
   return (
     <section id="calc" className="shell py-24 md:py-32">
       <div className="max-w-[62ch]">
-        <p className="eyebrow">Тазалық конфигураторы</p>
-        <h2 className="h2 mt-5">Соберите свою уборку. Цена — сразу, без звонков</h2>
-        <p className="muted mt-5">
-          Никаких «приедем и посмотрим». Итог из калькулятора фиксируется в договоре.
-        </p>
+        <p className="eyebrow">{t("eyebrow")}</p>
+        <h2 className="h2 mt-5">{t("h2")}</h2>
+        <p className="muted mt-5">{t("sub")}</p>
       </div>
 
       <div className="mt-14 grid gap-8 lg:grid-cols-[1.35fr_0.65fr]">
         <div>
           {/* Шаг 1 — тип уборки */}
           <fieldset>
-            <legend className="eyebrow">Шаг 1 · Тип уборки</legend>
+            <legend className="eyebrow">{t("step1")}</legend>
             <div className="mt-4 grid gap-3 sm:grid-cols-3">
               {CLEANING_TYPES.map((type) => {
                 const active = state.type === type.id;
@@ -74,8 +74,10 @@ export function CalculatorSection() {
                         className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-[var(--color-ember-600)] to-[var(--color-ember-300)]"
                       />
                     )}
-                    <span className="eyebrow text-[0.58rem]">{type.kz}</span>
-                    <span className="h3 mt-2 block text-lg">{type.ru}</span>
+                    <span className="eyebrow text-[0.58rem]">{locale === "kz" ? type.ru : type.kz}</span>
+                    <span className="h3 mt-2 block text-lg">
+                      {locale === "kz" ? type.kz : type.ru}
+                    </span>
                     <span className="nums mt-3 block text-sm text-[var(--color-sage-600)]">
                       {type.perM2} ₸ / м²
                     </span>
@@ -88,7 +90,7 @@ export function CalculatorSection() {
 
           {/* Шаг 2 — площадь */}
           <fieldset className="mt-10">
-            <legend className="eyebrow">Шаг 2 · Площадь</legend>
+            <legend className="eyebrow">{t("step2")}</legend>
 
             <div className="mt-4 flex flex-wrap gap-2">
               {AREA_PRESETS.map((preset) => (
@@ -111,7 +113,7 @@ export function CalculatorSection() {
 
             <div className="surface mt-4 flex flex-col gap-5 p-5 sm:flex-row sm:items-center">
               <label className="flex items-center gap-3">
-                <span className="eyebrow whitespace-nowrap">Точная площадь</span>
+                <span className="eyebrow whitespace-nowrap">{t("exactArea")}</span>
                 <input
                   type="number"
                   min={20}
@@ -138,15 +140,18 @@ export function CalculatorSection() {
 
           {/* Шаг 3 — балкон: как квартира — всегда видно м² и формулу цены */}
           <fieldset className="mt-10">
-            <legend className="eyebrow">Шаг 3 · Балкон</legend>
+            <legend className="eyebrow">{t("step3")}</legend>
             <div className="surface mt-4 space-y-4 p-5">
               <label className="flex cursor-pointer items-center gap-3">
                 <Switch checked={state.balcony} onChange={toggleBalcony} />
                 <span className="text-sm">
-                  Добавить балкон
+                  {t("addBalcony")}
                   <span className="muted block text-xs">
-                    До {BALCONY_STANDARD_M2} м² — {formatTenge(BALCONY_FLAT_PRICE)}. Больше —
-                    площадь × {cleaningType.perM2} ₸ / м²
+                    {t("balconyHint", {
+                      standard: BALCONY_STANDARD_M2,
+                      flat: formatTenge(BALCONY_FLAT_PRICE),
+                      rate: cleaningType.perM2,
+                    })}
                   </span>
                 </span>
               </label>
@@ -154,7 +159,7 @@ export function CalculatorSection() {
               {state.balcony && (
                 <div className="flex flex-col gap-4 border-t border-[var(--hairline)] pt-4 sm:flex-row sm:items-center">
                   <label className="flex items-center gap-3">
-                    <span className="eyebrow whitespace-nowrap">Площадь балкона</span>
+                    <span className="eyebrow whitespace-nowrap">{t("balconyArea")}</span>
                     <input
                       type="number"
                       min={2}
@@ -189,7 +194,7 @@ export function CalculatorSection() {
 
           {/* Шаг 4 — допы */}
           <fieldset className="mt-10">
-            <legend className="eyebrow">Шаг 4 · Дополнительно</legend>
+            <legend className="eyebrow">{t("step4")}</legend>
             <ul className="mt-4 grid gap-2 sm:grid-cols-2">
               {EXTRAS.map((extra) => {
                 const qty = state.extras[extra.id] ?? 0;
@@ -206,8 +211,11 @@ export function CalculatorSection() {
                       <p className="truncate text-sm">{extra.title}</p>
                       <p className="nums muted text-xs">
                         {custom
-                          ? "рассчитаем на объекте"
+                          ? t("onSite")
                           : `${extra.from ? "от " : ""}${formatTenge(extra.price!)} / ${extra.unit}`}
+                        {locale === "kz" && extra.kz ? (
+                          <span className="mt-0.5 block opacity-70">{extra.kz}</span>
+                        ) : null}
                       </p>
                     </div>
 
@@ -228,7 +236,7 @@ export function CalculatorSection() {
 
           {/* Шаг 5 — Аластау */}
           <fieldset className="mt-10">
-            <legend className="eyebrow">Шаг 5 · Фирменный ритуал</legend>
+            <legend className="eyebrow">{t("step5")}</legend>
 
             <motion.div
               animate={{
@@ -245,10 +253,8 @@ export function CalculatorSection() {
               <label className="flex cursor-pointer items-start gap-3">
                 <Switch checked={state.alastau} onChange={toggleAlastau} accent />
                 <span className="text-sm">
-                  Обряд «Аластау» — окуривание адыраспаном
-                  <span className="muted mt-0.5 block text-xs">
-                    6–8 минут после уборки. Есть версия без дыма — гидролат.
-                  </span>
+                  {t("alastauTitle")}
+                  <span className="muted mt-0.5 block text-xs">{t("alastauHint")}</span>
                 </span>
               </label>
 
@@ -260,9 +266,9 @@ export function CalculatorSection() {
                 }`}
               >
                 {isAlastauFree(state.type)
-                  ? "В подарок"
+                  ? t("gift")
                   : ALASTAU_OPTION_PRICE === null
-                    ? "Уточним"
+                    ? t("clarify")
                     : formatTenge(ALASTAU_OPTION_PRICE)}
               </span>
             </motion.div>
@@ -270,20 +276,16 @@ export function CalculatorSection() {
 
           {booking && <BookingForm onClose={() => setBooking(false)} />}
 
-          {/* Выход для тех, кому калькулятор неудобен */}
           <div className="surface mt-10 flex flex-col gap-5 border-[color-mix(in_oklab,var(--color-brass)_45%,transparent)] p-6 md:flex-row md:items-center md:justify-between">
             <div>
-              <h3 className="h3 text-xl">Не хочется считать самому?</h3>
-              <p className="muted mt-2 max-w-[52ch] text-sm">
-                Напишите в WhatsApp или позвоните — задам 3 вопроса и назову точную сумму за пару
-                минут. Считать ничего не нужно.
-              </p>
+              <h3 className="h3 text-xl">{t("fallbackTitle")}</h3>
+              <p className="muted mt-2 max-w-[52ch] text-sm">{t("fallbackText")}</p>
             </div>
             <div className="flex shrink-0 flex-col items-start gap-2">
               <WhatsAppButton
                 source="calc_fallback"
-                text={WA_TEXTS.calcFallback}
-                label="Написать в WhatsApp"
+                textKey="calcFallback"
+                label={t("fallbackWa")}
                 variant="brass"
               />
               <PhoneLink source="calc_fallback" className="eyebrow pl-1 text-[0.62rem]" />

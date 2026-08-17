@@ -1,46 +1,22 @@
+"use client";
+
+import { useTranslations } from "next-intl";
 import { Reveal } from "@/components/ui/Reveal";
 
-const ITEMS = [
-  {
-    fear: "Страшно впускать в дом посторонних",
-    answer:
-      "До приезда вы получаете карточку клинера: фото, имя, стаж, проверенный паспорт и действующая медсправка. Состав команды не меняется без вашего согласия.",
-    tag: "Верификация",
-  },
-  {
-    fear: "А если испортят мебель или технику?",
-    answer:
-      "Договор с материальной ответственностью. Любое средство сначала тестируем на скрытом участке — на изнаночной стороне обивки или в углу за дверью.",
-    tag: "Ответственность",
-  },
-  {
-    fear: "Химия, резкий запах, аллергия",
-    answer:
-      "pH-нейтральные составы с сертификатами и паспортами безопасности — покажем до заказа. Для детских и аллергиков есть протокол без ароматизаторов.",
-    tag: "Безопасность",
-  },
-  {
-    fear: "Сделают быстро и «на отвали»",
-    answer:
-      "Приёмка по фото до и после каждой зоны. Что-то не устроило — переделываем в течение 48 часов бесплатно, без разговоров о доплате.",
-    tag: "Гарантия",
-  },
-];
-
 export function ObjectionsSection() {
+  const t = useTranslations("objections");
+  const items = t.raw("items") as { tag: string; fear: string; answer: string }[];
+
   return (
     <section className="shell py-24 md:py-32">
       <Reveal>
-        <p className="eyebrow">Честно о главном</p>
-        <h2 className="h2 mt-5 max-w-[24ch]">Мы знаем, почему вы годами убираете сами</h2>
-        <p className="muted mt-5 max-w-[56ch]">
-          Это четыре причины, из-за которых люди в Алматы не заказывают клининг. Вот что мы сделали
-          с каждой из них.
-        </p>
+        <p className="eyebrow">{t("eyebrow")}</p>
+        <h2 className="h2 mt-5 max-w-[24ch]">{t("h2")}</h2>
+        <p className="muted mt-5 max-w-[56ch]">{t("sub")}</p>
       </Reveal>
 
       <ul className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {ITEMS.map((item, index) => (
+        {items.map((item, index) => (
           <Reveal
             as="li"
             key={item.fear}

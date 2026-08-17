@@ -38,7 +38,7 @@ npm run fonts:check # у каких шрифтов есть подсет cyrilli
 | Свободные слоты в Hero | `HeroSection.tsx` | данными из Firebase |
 | Цена опции «Аластау» при влажной уборке | `src/lib/pricing.ts` → `ALASTAU_OPTION_PRICE` | сейчас `null` («уточним»); подставить число, когда решите |
 | Реквизиты, БИН, политика | `src/lib/company.ts` + `/privacy` | заполнить `iin` и `email` перед публикацией |
-| GA4 / Яндекс.Метрика | `src/lib/analytics.ts` | ID счётчиков (события уже отправляются в `dataLayer`) |
+| GA4 / Яндекс.Метрика | `.env` → `NEXT_PUBLIC_GA_ID`, `NEXT_PUBLIC_YM_ID` | см. `docs/analytics-setup.md` |
 
 ## Структура
 

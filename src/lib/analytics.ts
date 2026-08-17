@@ -16,16 +16,25 @@ declare global {
   }
 }
 
+const YM_ID = process.env.NEXT_PUBLIC_YM_ID
+  ? Number(process.env.NEXT_PUBLIC_YM_ID)
+  : NaN;
+
 /**
- * Единая точка отправки целей. Пока счётчики не подключены — пишем в dataLayer,
- * чтобы события не терялись и подхватились после установки GA4 / Метрики.
+ * Единая точка отправки целей в GA4 и Яндекс.Метрику.
+ * Всегда пишем в dataLayer — даже без счётчиков события не теряются в отладке.
  */
 export function track(event: EventName, params: Params = {}) {
   if (typeof window === "undefined") return;
 
   window.dataLayer = window.dataLayer ?? [];
   window.dataLayer.push({ event, ...params });
+
   window.gtag?.("event", event, params);
+
+  if (Number.isFinite(YM_ID) && YM_ID > 0) {
+    window.ym?.(YM_ID, "reachGoal", event, params);
+  }
 }
 
 /** Лёгкая тактильная отдача на тумблерах и шагах калькулятора. */

@@ -2,38 +2,20 @@
 
 import { useRef, useState } from "react";
 import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
-import { WA_TEXTS } from "@/lib/contact";
+import { useTranslations } from "next-intl";
 import { easeBrand, viewportOnce } from "@/lib/motion";
 import { WhatsAppButton } from "@/components/contact/WhatsAppButton";
 import { MediaSlot } from "@/components/ui/MediaSlot";
 
-const STEPS = [
-  {
-    kz: "Тазарту",
-    ru: "Чистота",
-    text: "Полная уборка по чек-листу: пыль, жир, налёт, текстиль. Всё, что видно, и всё, что не видно.",
-  },
-  {
-    kz: "Аластау",
-    ru: "Дым адыраспана",
-    text: "Сушёный адыраспан тлеет в керамической чаше. Дым проносят по всем углам, проёмам и порогам — по солнцу, как это делали всегда.",
-  },
-  {
-    kz: "Тыныс",
-    ru: "Дыхание",
-    text: "Проветривание, гидролат полыни и можжевельника — и карточка с «бата», добрым пожеланием вашему дому.",
-  },
-];
-
 export function AlastauSection() {
+  const t = useTranslations("alastau");
   const ref = useRef<HTMLElement>(null);
   const reduce = useReducedMotion();
   const [botany, setBotany] = useState(false);
+  const steps = t.raw("steps") as { kz: string; ru: string; text: string }[];
 
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
 
-  // Дым идёт снизу вверх по мере скролла. Позже заменяется секвенцией
-  // из 90 кадров реальной съёмки на чёрном бархате (см. docs/alas-frontend-spec.md, §6.1).
   const smokeY = useTransform(scrollYProgress, [0, 1], ["25%", "-35%"]);
   const smokeOpacity = useTransform(scrollYProgress, [0, 0.35, 0.75, 1], [0, 0.85, 0.7, 0.1]);
   const smokeScale = useTransform(scrollYProgress, [0, 1], [0.85, 1.35]);
@@ -50,7 +32,11 @@ export function AlastauSection() {
 
       <motion.div
         aria-hidden
-        style={{ y: reduce ? 0 : smokeY, opacity: reduce ? 0.35 : smokeOpacity, scale: reduce ? 1 : smokeScale }}
+        style={{
+          y: reduce ? 0 : smokeY,
+          opacity: reduce ? 0.35 : smokeOpacity,
+          scale: reduce ? 1 : smokeScale,
+        }}
         className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-[130%]"
       >
         <div
@@ -85,23 +71,21 @@ export function AlastauSection() {
           transition={{ duration: 0.7, ease: easeBrand }}
           className="eyebrow text-[var(--color-brass)]"
         >
-          Фирменный ритуал ALAS
+          {t("eyebrow")}
         </motion.p>
 
         <div className="mt-6 grid gap-14 lg:grid-cols-[1.1fr_0.9fr] lg:gap-20">
           <div>
             <h2 className="h2 max-w-[18ch]">
-              Алас, алас —<br />
-              <span className="italic text-[var(--color-ember-300)]">бәледен халас</span>
+              {t("h2Lead")}
+              <br />
+              <span className="italic text-[var(--color-ember-300)]">{t("h2Accent")}</span>
             </h2>
 
-            <p className="muted mt-8 max-w-[50ch] text-lg">
-              Обряд, которым наши бабушки очищали воздух в доме. Мы вернули его — как финальный,
-              149-й пункт нашего чек-листа.
-            </p>
+            <p className="muted mt-8 max-w-[50ch] text-lg">{t("sub")}</p>
 
             <ol className="mt-14 space-y-0">
-              {STEPS.map((step, index) => (
+              {steps.map((step, index) => (
                 <motion.li
                   key={step.kz}
                   initial={{ opacity: 0, y: 24, filter: "blur(8px)" }}
@@ -137,7 +121,7 @@ export function AlastauSection() {
                 aria-expanded={botany}
                 className="flex w-full items-center justify-between gap-4 text-left"
               >
-                <span className="h3 text-xl">Это не магия. Это ботаника и уважение к традиции</span>
+                <span className="h3 text-xl">{t("botanyTitle")}</span>
                 <span
                   aria-hidden
                   className={`grid size-9 shrink-0 place-items-center rounded-full border border-[var(--hairline)] transition-transform duration-500 ease-[var(--ease-brand)] ${
@@ -154,41 +138,29 @@ export function AlastauSection() {
                 transition={{ duration: 0.55, ease: easeBrand }}
                 className="overflow-hidden"
               >
-                <p className="muted mt-5 max-w-[58ch] text-sm leading-relaxed">
-                  Адыраспан (гармала) веками использовали как природный антисептик воздуха. Мы
-                  проводим обряд аккуратно: 6–8 минут, чаша с песком, открытые окна, датчик дыма
-                  прикрыт. Никакой эзотерики и никакого открытого огня в комнате.
-                </p>
+                <p className="muted mt-5 max-w-[58ch] text-sm leading-relaxed">{t("botanyText")}</p>
                 <p className="mt-4 max-w-[58ch] text-sm leading-relaxed text-[var(--color-ember-300)]">
-                  Есть версия без дыма — гидролат адыраспана. Для аллергиков, детских комнат и
-                  офисов с пожарной сигнализацией.
+                  {t("botanyAlt")}
                 </p>
               </motion.div>
             </div>
 
             <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center">
               <a href="#calc" className="btn btn-primary">
-                Добавить обряд к уборке
+                {t("ctaCalc")}
               </a>
               <WhatsAppButton
                 source="alastau"
-                text={WA_TEXTS.alastau}
-                label="Спросить про обряд"
+                textKey="alastau"
+                label={t("ctaWa")}
                 variant="brass"
               />
             </div>
           </div>
 
           <div className="lg:pt-10">
-            <MediaSlot
-              brief="ВИДЕО 40 сек: чистая комната → керамическая чаша → тлеющий уголёк адыраспана → дым по углам → открытое окно → карточка «бата» на столе"
-              ratio="3 / 4"
-              tone="warm"
-            />
-            <p className="eyebrow mt-5 text-[0.6rem] leading-relaxed">
-              Снимаем сами, в реальных квартирах. Ни одного стокового кадра — иначе ритуал перестаёт
-              быть вашим.
-            </p>
+            <MediaSlot brief={t("filmBrief")} ratio="3 / 4" tone="warm" />
+            <p className="eyebrow mt-5 text-[0.6rem] leading-relaxed">{t("filmNote")}</p>
           </div>
         </div>
       </div>

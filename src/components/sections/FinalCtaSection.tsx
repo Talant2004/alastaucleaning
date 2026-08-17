@@ -1,8 +1,13 @@
-import { CONTACT, WA_TEXTS } from "@/lib/contact";
+"use client";
+
+import { useTranslations } from "next-intl";
+import { CONTACT } from "@/lib/contact";
 import { Reveal } from "@/components/ui/Reveal";
 import { PhoneLink, WhatsAppButton } from "@/components/contact/WhatsAppButton";
 
 export function FinalCtaSection() {
+  const t = useTranslations("finalCta");
+
   return (
     <section data-theme-zone="night" className="relative overflow-hidden py-28 md:py-36">
       <div aria-hidden className="absolute inset-0 -z-10 bg-[var(--color-obsidian)]" />
@@ -14,29 +19,30 @@ export function FinalCtaSection() {
 
       <div className="shell text-center">
         <Reveal>
-          <p className="eyebrow text-[var(--color-brass)]">Готовы начать?</p>
-          <h2 className="h2 mx-auto mt-6 max-w-[22ch]">
-            Ваш дом заслуживает не уборку, а обновление
-          </h2>
+          <p className="eyebrow text-[var(--color-brass)]">{t("eyebrow")}</p>
+          <h2 className="h2 mx-auto mt-6 max-w-[22ch]">{t("h2")}</h2>
           <p className="muted mx-auto mt-6 max-w-[46ch]">
-            Ответим в WhatsApp за {CONTACT.replyMinutes} минут. Работаем ежедневно с{" "}
-            {CONTACT.hoursFrom}:00 до {CONTACT.hoursTo}:00.
+            {t("sub", {
+              minutes: CONTACT.replyMinutes,
+              from: CONTACT.hoursFrom,
+              to: CONTACT.hoursTo,
+            })}
           </p>
 
           <div className="mt-11 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <a href="#calc" className="btn btn-primary">
-              Рассчитать и забронировать
+              {t("ctaCalc")}
             </a>
             <WhatsAppButton
               source="final_cta"
-              text={WA_TEXTS.finalCta}
-              label="Написать в WhatsApp"
+              textKey="finalCta"
+              label={t("ctaWa")}
               variant="brass"
             />
           </div>
 
           <p className="mt-10">
-            <span className="eyebrow block text-[0.6rem]">Или просто позвоните</span>
+            <span className="eyebrow block text-[0.6rem]">{t("orCall")}</span>
             <PhoneLink source="final_cta" className="mt-2 inline-block text-2xl" />
           </p>
         </Reveal>

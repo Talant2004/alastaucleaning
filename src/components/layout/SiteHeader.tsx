@@ -2,23 +2,27 @@
 
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { CONTACT, WA_TEXTS } from "@/lib/contact";
+import { useTranslations } from "next-intl";
+import { CONTACT } from "@/lib/contact";
 import { easeBrand } from "@/lib/motion";
 import { WhatsAppButton } from "@/components/contact/WhatsAppButton";
+import { LocaleSwitch } from "./LocaleSwitch";
 import { Logo } from "./Logo";
 
-const NAV = [
-  { href: "#services", label: "Услуги" },
-  { href: "#alastau", label: "Аластау" },
-  { href: "#calc", label: "Цены" },
-  { href: "#cases", label: "Кейсы" },
-  { href: "#team", label: "Команда" },
-  { href: "#faq", label: "Вопросы" },
-];
-
 export function SiteHeader() {
+  const t = useTranslations("nav");
+  const tContact = useTranslations("contact");
   const [scrolled, setScrolled] = useState(false);
   const [menu, setMenu] = useState(false);
+
+  const nav = [
+    { href: "#services", label: t("services") },
+    { href: "#alastau", label: t("alastau") },
+    { href: "#calc", label: t("prices") },
+    { href: "#cases", label: t("cases") },
+    { href: "#team", label: t("team") },
+    { href: "#faq", label: t("faq") },
+  ];
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -44,7 +48,7 @@ export function SiteHeader() {
         <Logo />
 
         <nav className="hidden items-center gap-7 text-sm lg:flex">
-          {NAV.map((item) => (
+          {nav.map((item) => (
             <a
               key={item.href}
               href={item.href}
@@ -56,25 +60,27 @@ export function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <span className="eyebrow hidden text-[0.6rem] xl:block">ҚАЗ / РУС</span>
+          <span className="hidden xl:block">
+            <LocaleSwitch />
+          </span>
 
           <WhatsAppButton
             source="header"
-            text={WA_TEXTS.header}
-            label="WhatsApp"
+            textKey="header"
+            label={tContact("wa")}
             showNumber
             variant="brass"
             className="hidden h-11 min-h-11 px-4 text-sm sm:inline-flex"
           />
 
           <a href="#calc" className="btn btn-primary hidden h-11 min-h-11 px-5 text-sm md:inline-flex">
-            Рассчитать за 30 секунд
+            {t("calcCta")}
           </a>
 
           <button
             type="button"
             onClick={() => setMenu((v) => !v)}
-            aria-label={menu ? "Закрыть меню" : "Открыть меню"}
+            aria-label={menu ? t("closeMenu") : t("openMenu")}
             aria-expanded={menu}
             className="hairline grid size-11 place-items-center rounded-full lg:hidden"
           >
@@ -103,7 +109,10 @@ export function SiteHeader() {
             transition={{ duration: 0.4, ease: easeBrand }}
             className="glass shell mt-2 flex flex-col gap-1 py-4 lg:hidden"
           >
-            {NAV.map((item) => (
+            <div className="mb-3">
+              <LocaleSwitch />
+            </div>
+            {nav.map((item) => (
               <a
                 key={item.href}
                 href={item.href}

@@ -2,7 +2,6 @@
 
 import { useRef } from "react";
 import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
-import { useLocale, useTranslations } from "next-intl";
 import { CLEANING_TYPES, type CleaningTypeId } from "@/lib/pricing";
 import { useEstimate } from "@/components/calculator/estimate-store";
 import { MediaSlot } from "@/components/ui/MediaSlot";
@@ -50,8 +49,6 @@ const EXTRA_CARDS: Card[] = [
 ];
 
 export function ServicesRail() {
-  const t = useTranslations("services");
-  const locale = useLocale();
   const wrapper = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
   const { scrollYProgress } = useScroll({ target: wrapper, offset: ["start start", "end end"] });
@@ -62,7 +59,7 @@ export function ServicesRail() {
   const cards: Card[] = [
     ...CLEANING_TYPES.map((type) => ({
       id: type.id,
-      title: locale === "kz" ? type.kz : type.ru,
+      title: type.ru,
       kz: type.kz,
       tagline: type.tagline,
       price: `${type.perM2} ₸ / м²`,
@@ -83,12 +80,15 @@ export function ServicesRail() {
 
   return (
     <section id="services" className="border-y border-[var(--hairline)]">
+      {/* Пин работает на десктопе; на мобиле деградирует в нативный snap-скролл */}
       <div ref={wrapper} className="relative hidden h-[420vh] lg:block">
         <div className="sticky top-0 flex h-screen flex-col justify-center overflow-hidden">
           <div className="shell">
-            <p className="eyebrow">{t("eyebrow")}</p>
-            <h2 className="h2 mt-4 max-w-[20ch]">{t("h2")}</h2>
-            <p className="muted mt-4 max-w-[46ch]">{t("sub")}</p>
+            <p className="eyebrow">Тарифы и услуги</p>
+            <h2 className="h2 mt-4 max-w-[20ch]">Четыре сценария чистоты</h2>
+            <p className="muted mt-4 max-w-[46ch]">
+              Выберите свой — и добавьте прямо в расчёт, не заполняя заново.
+            </p>
           </div>
 
           <motion.ul
@@ -96,7 +96,7 @@ export function ServicesRail() {
             className="mt-10 flex gap-5 pl-[max(1.25rem,calc((100vw-1320px)/2+3.5rem))]"
           >
             {cards.map((card, index) => (
-              <ServiceCard key={card.id} card={card} index={index} onAdd={addToCalc} addLabel={t("addToCalc")} />
+              <ServiceCard key={card.id} card={card} index={index} onAdd={addToCalc} />
             ))}
           </motion.ul>
         </div>
@@ -104,12 +104,12 @@ export function ServicesRail() {
 
       <div className="lg:hidden">
         <div className="shell py-16">
-          <p className="eyebrow">{t("eyebrow")}</p>
-          <h2 className="h2 mt-4">{t("h2")}</h2>
+          <p className="eyebrow">Тарифы и услуги</p>
+          <h2 className="h2 mt-4">Четыре сценария чистоты</h2>
         </div>
         <ul className="flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-16">
           {cards.map((card, index) => (
-            <ServiceCard key={card.id} card={card} index={index} onAdd={addToCalc} addLabel={t("addToCalc")} />
+            <ServiceCard key={card.id} card={card} index={index} onAdd={addToCalc} />
           ))}
         </ul>
       </div>
@@ -121,17 +121,17 @@ function ServiceCard({
   card,
   index,
   onAdd,
-  addLabel,
 }: {
   card: Card;
   index: number;
   onAdd: (type?: CleaningTypeId) => void;
-  addLabel: string;
 }) {
   return (
     <li className="surface flex w-[82vw] shrink-0 snap-center flex-col p-6 sm:w-96 lg:w-[26rem]">
       <div className="flex items-start justify-between">
-        <span className="font-display text-4xl text-[var(--color-brass)]">0{index + 1}</span>
+        <span className="font-display text-4xl text-[var(--color-brass)]">
+          0{index + 1}
+        </span>
         <span className="eyebrow text-right text-[0.6rem]">{card.kz}</span>
       </div>
 
@@ -151,7 +151,7 @@ function ServiceCard({
       </ul>
 
       <button type="button" onClick={() => onAdd(card.addType)} className="btn btn-ghost mt-7 w-full">
-        {addLabel}
+        Добавить в расчёт
       </button>
     </li>
   );

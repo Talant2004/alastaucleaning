@@ -1,8 +1,9 @@
-"use client";
+﻿"use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useState } from "react";
 import { motion } from "motion/react";
+import { useTranslations } from "next-intl";
 import { easeBrand } from "@/lib/motion";
 import { track } from "@/lib/analytics";
 import { CONTACT, waLink } from "@/lib/contact";
@@ -25,8 +26,8 @@ function nextDays(count: number) {
   });
 }
 
-/** Пока нет Firebase — заявка уходит в WhatsApp готовым текстом, ничего не теряется. */
 export function BookingForm({ onClose }: { onClose: () => void }) {
+  const t = useTranslations("booking");
   const { whatsappText } = useEstimate();
   const days = nextDays(7);
 
@@ -41,7 +42,7 @@ export function BookingForm({ onClose }: { onClose: () => void }) {
   const message = [
     whatsappText(),
     "",
-    `Желаемая дата: ${selectedDay?.label ?? date}, ${time}`,
+    `Дата: ${selectedDay?.label ?? date}, ${time}`,
     name && `Имя: ${name}`,
     phone && `Телефон: ${phone}`,
     address && `Адрес: ${address}`,
@@ -58,23 +59,21 @@ export function BookingForm({ onClose }: { onClose: () => void }) {
     >
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h3 className="h3">Когда вам удобно?</h3>
-          <p className="muted mt-1 text-sm">
-            Подтвердим слот в WhatsApp в течение {CONTACT.replyMinutes} минут.
-          </p>
+          <h3 className="h3">{t("title")}</h3>
+          <p className="muted mt-1 text-sm">{t("sub", { minutes: CONTACT.replyMinutes })}</p>
         </div>
         <button
           type="button"
           onClick={onClose}
-          aria-label="Свернуть бронирование"
+          aria-label="x"
           className="hairline grid size-9 shrink-0 place-items-center rounded-full"
         >
-          ×
+          x
         </button>
       </div>
 
       <fieldset className="mt-6">
-        <legend className="eyebrow">Дата</legend>
+        <legend className="eyebrow">{t("date")}</legend>
         <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
           {days.map((day) => (
             <button
@@ -96,7 +95,7 @@ export function BookingForm({ onClose }: { onClose: () => void }) {
       </fieldset>
 
       <fieldset className="mt-6">
-        <legend className="eyebrow">Время начала</legend>
+        <legend className="eyebrow">{t("time")}</legend>
         <div className="mt-3 flex flex-wrap gap-2">
           {TIME_SLOTS.map((slot) => (
             <button
@@ -117,21 +116,9 @@ export function BookingForm({ onClose }: { onClose: () => void }) {
       </fieldset>
 
       <div className="mt-6 grid gap-3 sm:grid-cols-2">
-        <Field label="Как к вам обращаться" value={name} onChange={setName} placeholder="Айгерим" />
-        <Field
-          label="Телефон"
-          value={phone}
-          onChange={setPhone}
-          placeholder="+7 (707) 000-00-00"
-          type="tel"
-        />
-        <Field
-          label="Адрес"
-          value={address}
-          onChange={setAddress}
-          placeholder="ЖК, улица, дом, квартира"
-          className="sm:col-span-2"
-        />
+        <Field label={t("name")} value={name} onChange={setName} placeholder={t("namePh")} />
+        <Field label={t("phone")} value={phone} onChange={setPhone} placeholder={t("phonePh")} type="tel" />
+        <Field label={t("address")} value={address} onChange={setAddress} placeholder={t("addressPh")} className="sm:col-span-2" />
       </div>
 
       <a
@@ -141,20 +128,20 @@ export function BookingForm({ onClose }: { onClose: () => void }) {
         onClick={() => track("booking_submit", { date, time, hasName: Boolean(name) })}
         className="btn btn-primary mt-7 w-full"
       >
-        Подтвердить бронь в WhatsApp
+        {t("submit")}
       </a>
 
       <p className="muted mt-3 text-center text-xs leading-relaxed">
-        Нажимая кнопку, вы соглашаетесь с{" "}
-        <Link href="/privacy" className="underline-offset-2 hover:underline">
-          политикой конфиденциальности
-        </Link>
-        : имя, телефон и адрес нужны только для выполнения заказа.
+        {t.rich("consent", {
+          privacy: (chunks) => (
+            <Link href="/privacy" className="underline-offset-2 hover:underline">
+              {chunks}
+            </Link>
+          ),
+        })}
       </p>
 
-      <p className="eyebrow mt-4 text-center text-[0.58rem] leading-relaxed">
-        Ничего не спишется. Мы сверим детали и закрепим за вами команду
-      </p>
+      <p className="eyebrow mt-4 text-center text-[0.58rem] leading-relaxed">{t("note")}</p>
     </motion.div>
   );
 }

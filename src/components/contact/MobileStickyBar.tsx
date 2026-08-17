@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { CONTACT, WA_TEXTS, waLink } from "@/lib/contact";
+import { useTranslations } from "next-intl";
+import { CONTACT, waLink } from "@/lib/contact";
 import { track } from "@/lib/analytics";
 import { easeBrand } from "@/lib/motion";
 import { formatTenge } from "@/lib/pricing";
@@ -10,6 +11,8 @@ import { useEstimate } from "@/components/calculator/estimate-store";
 import { WhatsAppIcon } from "./WhatsAppIcon";
 
 export function MobileStickyBar() {
+  const t = useTranslations("calculator");
+  const tContact = useTranslations("contact");
   const { estimate, touched, whatsappText } = useEstimate();
   const [visible, setVisible] = useState(false);
 
@@ -31,25 +34,28 @@ export function MobileStickyBar() {
           className="glass safe-bottom fixed inset-x-0 bottom-0 z-80 flex gap-2 px-3 pt-3 md:hidden"
         >
           <a
-            {...waLink("mobile_bar", touched ? whatsappText() : WA_TEXTS.mobileBar)}
+            {...waLink(
+              "mobile_bar",
+              touched ? whatsappText() : tContact("waTexts.mobileBar"),
+            )}
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => track("whatsapp_click", { source: "mobile_bar" })}
-            aria-label={`Написать в WhatsApp: ${CONTACT.phoneDisplay}`}
+            aria-label={`${tContact("waWrite")}: ${CONTACT.phoneDisplay}`}
             className="btn btn-brass flex-[0_0_38%] px-3 text-sm"
           >
             <WhatsAppIcon />
-            <span>WhatsApp</span>
+            <span>{tContact("wa")}</span>
           </a>
 
           <a href="#calc" className="btn btn-primary flex-1 px-3 text-sm">
             {touched ? (
               <span className="flex flex-col items-center leading-tight">
                 <span className="nums font-medium">{formatTenge(estimate.total)}</span>
-                <span className="text-[0.65rem] opacity-70">Продолжить расчёт</span>
+                <span className="text-[0.65rem] opacity-70">{t("continueCalc")}</span>
               </span>
             ) : (
-              "Рассчитать за 30 секунд"
+              t("calcCtaShort")
             )}
           </a>
         </motion.div>

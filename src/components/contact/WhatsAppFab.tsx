@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { CONTACT, WA_TEXTS, isWorkingHours, waLink } from "@/lib/contact";
+import { useTranslations } from "next-intl";
+import { CONTACT, isWorkingHours, waLink } from "@/lib/contact";
 import { track } from "@/lib/analytics";
 import { easeBrand } from "@/lib/motion";
 import { useEstimate } from "@/components/calculator/estimate-store";
@@ -11,12 +12,10 @@ import { WhatsAppIcon } from "./WhatsAppIcon";
 const HINT_KEY = "alas:wa-hint-dismissed";
 
 export function WhatsAppFab() {
+  const t = useTranslations("contact");
   const { touched } = useEstimate();
   const [visible, setVisible] = useState(false);
   const [hint, setHint] = useState(false);
-
-  // Кнопка появляется только после скролла, поэтому к этому моменту мы уже на клиенте
-  // и расхождения с серверным рендером быть не может.
   const working = visible ? isWorkingHours() : true;
 
   useEffect(() => {
@@ -26,14 +25,11 @@ export function WhatsAppFab() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Подсказка показывается один раз за сессию и только тем, кто не тронул калькулятор.
   useEffect(() => {
     if (sessionStorage.getItem(HINT_KEY)) return;
-
     const timer = window.setTimeout(() => {
       if (!touched) setHint(true);
     }, 25_000);
-
     return () => window.clearTimeout(timer);
   }, [touched]);
 
@@ -61,18 +57,16 @@ export function WhatsAppFab() {
                 transition={{ duration: 0.5, ease: easeBrand }}
                 className="glass mb-1 max-w-70 rounded-[var(--radius-card)] p-4 pr-9 shadow-[var(--shadow-lift)]"
               >
-                <p className="text-sm leading-snug">
-                  Не хотите считать? Напишите — назовём цену сами.
-                </p>
+                <p className="text-sm leading-snug">{t("waFabHint")}</p>
                 <p className="eyebrow mt-2 text-[0.65rem]">
                   {working
-                    ? `Отвечаем за ${CONTACT.replyMinutes} минут`
-                    : "Ответим утром первым сообщением"}
+                    ? t("replyWorking", { minutes: CONTACT.replyMinutes })
+                    : t("replyOff")}
                 </p>
                 <button
                   type="button"
                   onClick={dismissHint}
-                  aria-label="Скрыть подсказку"
+                  aria-label="×"
                   className="absolute top-2.5 right-3 text-lg leading-none opacity-50 transition-opacity hover:opacity-100"
                 >
                   ×
@@ -82,14 +76,14 @@ export function WhatsAppFab() {
           </AnimatePresence>
 
           <a
-            {...waLink("fab", WA_TEXTS.fab)}
+            {...waLink("fab", t("waTexts.fab"))}
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => {
               track("whatsapp_click", { source: "fab" });
               dismissHint();
             }}
-            aria-label={`Написать в WhatsApp: ${CONTACT.phoneDisplay}`}
+            aria-label={`${t("waWrite")}: ${CONTACT.phoneDisplay}`}
             className="group relative grid size-14 place-items-center rounded-full border border-[color-mix(in_oklab,var(--color-brass)_55%,transparent)] bg-[var(--color-obsidian)] text-[var(--color-linen)] shadow-[var(--shadow-lift)] transition-transform duration-300 ease-[var(--ease-brand)] hover:scale-[1.06]"
           >
             <WhatsAppIcon className="size-6" />
