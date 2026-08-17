@@ -1,0 +1,328 @@
+@import "tailwindcss";
+
+@theme {
+  /* ── Базы ─────────────────────────────────────────────── */
+  --color-linen: #f7f4ef;
+  --color-linen-deep: #ede7de;
+  --color-obsidian: #14120f;
+  --color-obsidian-2: #1e1b17;
+
+  /* ── Адыраспан: основной акцент ───────────────────────── */
+  --color-sage-900: #3e4a3f;
+  --color-sage-600: #5e7360;
+  --color-sage-400: #8a9a82;
+  --color-sage-100: #dce3d8;
+
+  /* ── Алас: огонь. Максимум 2% площади экрана ──────────── */
+  --color-ember-600: #b4551f;
+  --color-ember-500: #c9772f;
+  --color-ember-300: #e9a23b;
+
+  /* ── Вода и воздух вместо «дешёвого синего» ───────────── */
+  --color-glacier-200: #d6e3e0;
+  --color-glacier-400: #a8c0bb;
+
+  /* ── Металл: только hairline и иконки ─────────────────── */
+  --color-brass: #b99a6b;
+  --color-silver: #c9c6be;
+
+  /* ── Текст ────────────────────────────────────────────── */
+  --color-ink: #14120f;
+  --color-on-dark: #f2ede4;
+
+  /* ── Радиусы: ровно три значения ──────────────────────── */
+  --radius-card: 24px;
+  --radius-media: 32px;
+
+  /* ── Шрифты ───────────────────────────────────────────── */
+  --font-display: var(--font-playfair), "Times New Roman", serif;
+  --font-ui: var(--font-inter-tight), system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+
+  /* ── Тени: одна длинная мягкая ────────────────────────── */
+  --shadow-lift: 0 32px 64px -24px rgb(20 18 15 / 0.18);
+  --shadow-lift-dark: 0 32px 64px -24px rgb(0 0 0 / 0.6);
+
+  /* ── Единая «дорогая» кривая ──────────────────────────── */
+  --ease-brand: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --animate-ember-pulse: ember-pulse 2.4s var(--ease-brand) infinite;
+  --animate-spark: spark 6s ease-in-out infinite;
+}
+
+@keyframes ember-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+@keyframes spark {
+  0%,
+  92%,
+  100% {
+    opacity: 0.35;
+  }
+  95% {
+    opacity: 1;
+  }
+}
+
+/* ── Инверсия темы по скроллу ─────────────────────────────
+   ThemeScrollObserver ставит data-theme на <html>.            */
+:root,
+:root[data-theme="day"] {
+  --bg: var(--color-linen);
+  --fg: var(--color-ink);
+  --fg-muted: color-mix(in oklab, var(--color-ink) 62%, transparent);
+  --hairline: color-mix(in oklab, var(--color-ink) 14%, transparent);
+  --surface: #fffdfa;
+}
+
+:root[data-theme="night"] {
+  --bg: var(--color-obsidian);
+  --fg: var(--color-on-dark);
+  --fg-muted: color-mix(in oklab, var(--color-on-dark) 58%, transparent);
+  --hairline: color-mix(in oklab, var(--color-brass) 34%, transparent);
+  --surface: var(--color-obsidian-2);
+}
+
+@layer base {
+  * {
+    border-color: var(--hairline);
+  }
+
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-ui);
+    font-size: clamp(1rem, 1.05vw, 1.1875rem);
+    line-height: 1.6;
+    transition: background-color 900ms var(--ease-brand), color 900ms var(--ease-brand);
+    overflow-x: clip;
+  }
+
+  ::selection {
+    background: var(--color-ember-300);
+    color: var(--color-obsidian);
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  input,
+  button,
+  select {
+    font: inherit;
+    color: inherit;
+  }
+
+  /* Плавный скролл только по якорям — инерцию даёт Lenis */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto !important;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  .shell {
+    width: 100%;
+    max-width: 1320px;
+    margin-inline: auto;
+    padding-inline: clamp(1.25rem, 4vw, 3.5rem);
+  }
+
+  .h1 {
+    font-family: var(--font-display);
+    font-size: clamp(2.6rem, 6.2vw, 5.75rem);
+    line-height: 0.98;
+  }
+
+  .h2 {
+    font-family: var(--font-display);
+    font-size: clamp(1.9rem, 4vw, 3.5rem);
+    line-height: 1.04;
+  }
+
+  .h3 {
+    font-family: var(--font-display);
+    font-size: clamp(1.35rem, 2vw, 1.85rem);
+    line-height: 1.15;
+  }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--fg-muted);
+  }
+
+  .muted {
+    color: var(--fg-muted);
+  }
+
+  .hairline {
+    border: 1px solid var(--hairline);
+  }
+
+  .glass {
+    background: color-mix(in oklab, var(--surface) 62%, transparent);
+    backdrop-filter: blur(18px) saturate(1.1);
+    border: 1px solid var(--hairline);
+  }
+
+  .surface {
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-card);
+  }
+
+  .nums {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+  }
+
+  /* ── Кнопки ─────────────────────────────────────────────
+     Primary: обсидиан, на hover снизу поднимается уголёк.   */
+  .btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    min-height: 56px;
+    padding-inline: 1.75rem;
+    border-radius: 999px;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    cursor: pointer;
+    overflow: hidden;
+    isolation: isolate;
+    transition: transform 220ms var(--ease-brand), color 220ms var(--ease-brand),
+      background-color 320ms var(--ease-brand), border-color 320ms var(--ease-brand);
+  }
+
+  .btn:active {
+    transform: scale(0.985);
+  }
+
+  .btn::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(
+      to top,
+      var(--color-ember-600),
+      var(--color-ember-500) 45%,
+      var(--color-ember-300)
+    );
+    transform: translateY(101%);
+    transition: transform 520ms var(--ease-brand);
+  }
+
+  .btn:hover::after {
+    transform: translateY(0);
+  }
+
+  .btn-primary {
+    background: var(--color-obsidian);
+    color: var(--color-linen);
+    border: 1px solid transparent;
+  }
+
+  .btn-primary:hover {
+    color: var(--color-obsidian);
+  }
+
+  :root[data-theme="night"] .btn-primary {
+    background: var(--color-linen);
+    color: var(--color-obsidian);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--fg);
+    border: 1px solid var(--hairline);
+  }
+
+  .btn-ghost:hover {
+    color: var(--color-obsidian);
+    border-color: transparent;
+  }
+
+  .btn-brass {
+    background: transparent;
+    color: var(--fg);
+    border: 1px solid color-mix(in oklab, var(--color-brass) 60%, transparent);
+  }
+
+  .btn-brass:hover {
+    color: var(--color-obsidian);
+    border-color: transparent;
+  }
+
+  .media-frame {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius-media);
+    border: 1px solid var(--hairline);
+    background: linear-gradient(
+      150deg,
+      color-mix(in oklab, var(--color-glacier-200) 70%, var(--surface)),
+      var(--surface) 55%,
+      color-mix(in oklab, var(--color-sage-100) 60%, var(--surface))
+    );
+  }
+
+  :root[data-theme="night"] .media-frame {
+    background: linear-gradient(
+      150deg,
+      color-mix(in oklab, var(--color-sage-900) 45%, var(--color-obsidian)),
+      var(--color-obsidian) 60%,
+      color-mix(in oklab, var(--color-ember-600) 22%, var(--color-obsidian))
+    );
+  }
+}
+
+@layer utilities {
+  /* Зерно: один фиксированный слой на весь сайт */
+  .grain {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    pointer-events: none;
+    opacity: 0.035;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .safe-bottom {
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+  }
+}
