@@ -1,6 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
+import { useTranslations } from "next-intl";
 import { easeBrand } from "@/lib/motion";
 import { formatTenge } from "@/lib/pricing";
 import { track } from "@/lib/analytics";
@@ -10,12 +11,14 @@ import { AnimatedNumber } from "@/components/ui/AnimatedNumber";
 import { useEstimate } from "./estimate-store";
 
 export function EstimateReceipt({ onBook }: { onBook: () => void }) {
+  const t = useTranslations("calculator");
+  const tCommon = useTranslations("common");
   const { estimate, whatsappText } = useEstimate();
 
   return (
     <div className="surface sticky top-28 p-6 shadow-[var(--shadow-lift)]">
       <div className="flex items-baseline justify-between">
-        <h3 className="eyebrow">Ваша смета</h3>
+        <h3 className="eyebrow">{t("receiptTitle")}</h3>
         <span className="eyebrow text-[0.6rem]">Алматы</span>
       </div>
 
@@ -37,7 +40,7 @@ export function EstimateReceipt({ onBook }: { onBook: () => void }) {
               </span>
               <span className="nums shrink-0 text-right">
                 {line.amount === null
-                  ? "по факту"
+                  ? tCommon("onFact")
                   : line.amount === 0
                     ? "0 ₸"
                     : formatTenge(line.amount)}
@@ -49,24 +52,20 @@ export function EstimateReceipt({ onBook }: { onBook: () => void }) {
 
       <div className="mt-6 flex items-end justify-between">
         <div>
-          <p className="eyebrow text-[0.6rem]">Итого</p>
+          <p className="eyebrow text-[0.6rem]">{t("total")}</p>
           <AnimatedNumber value={estimate.total} className="text-3xl font-medium" />
         </div>
-        <p className="muted text-right text-xs leading-snug">
-          ≈ {estimate.hours} ч
-          <br />
-          {estimate.crew} клинера
+        <p className="muted whitespace-pre-line text-right text-xs leading-snug">
+          {t("hoursCrew", { hours: estimate.hours, crew: estimate.crew })}
         </p>
       </div>
 
       {estimate.hasCustomItems && (
-        <p className="muted mt-3 text-xs">
-          Часть услуг считаем на объекте — назовём точную сумму до начала работ.
-        </p>
+        <p className="muted mt-3 text-xs">{t("customNote")}</p>
       )}
 
       <button type="button" onClick={onBook} className="btn btn-primary mt-6 w-full">
-        Забронировать слот
+        {t("book")}
       </button>
 
       <a
@@ -74,16 +73,14 @@ export function EstimateReceipt({ onBook }: { onBook: () => void }) {
         target="_blank"
         rel="noopener noreferrer"
         onClick={() => track("whatsapp_click", { source: "estimate" })}
-        aria-label={`Отправить смету в WhatsApp: ${CONTACT.phoneDisplay}`}
+        aria-label={`${t("sendWa")}: ${CONTACT.phoneDisplay}`}
         className="btn btn-brass mt-2.5 w-full text-sm"
       >
         <WhatsAppIcon />
-        Отправить смету в WhatsApp
+        {t("sendWa")}
       </a>
 
-      <p className="eyebrow mt-4 text-center text-[0.58rem] leading-relaxed">
-        Цена из калькулятора фиксируется в договоре
-      </p>
+      <p className="eyebrow mt-4 text-center text-[0.58rem] leading-relaxed">{t("priceFixed")}</p>
     </div>
   );
 }

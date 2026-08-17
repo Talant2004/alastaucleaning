@@ -1,79 +1,55 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Reveal } from "@/components/ui/Reveal";
 import { LensCompare } from "@/components/ui/LensCompare";
 
-const CASES = [
-  {
-    id: "post-repair",
-    filter: "После ремонта",
-    title: "3-комнатная после ремонта",
-    district: "ЖК «Алтын Ауыл», Бостандыкский район",
-    area: 96,
-    hours: 9,
-    crew: 4,
-    price: "76 800 ₸",
-    beforeBrief: "ДО: строительная пыль на полу и подоконниках, следы затирки",
-    afterBrief: "ПОСЛЕ: чистое стекло, пол без пыли, свет по всей комнате",
-  },
-  {
-    id: "kitchen",
-    filter: "Кухня",
-    title: "Кухня с жиром на фасадах",
-    district: "Медеуский район, частный дом",
-    area: 18,
-    hours: 4,
-    crew: 2,
-    price: "23 000 ₸",
-    beforeBrief: "ДО: налёт на фасадах, жир на плите и вытяжке",
-    afterBrief: "ПОСЛЕ: матовые фасады без разводов, чистая вытяжка",
-  },
-  {
-    id: "sofa",
-    filter: "Химчистка",
-    title: "Диван после двух лет с питомцем",
-    district: "Алмалинский район",
-    area: 0,
-    hours: 3,
-    crew: 2,
-    price: "13 000 ₸",
-    beforeBrief: "ДО: пятна на подлокотниках, следы шерсти в швах",
-    afterBrief: "ПОСЛЕ: восстановленный ворс, без запаха и разводов",
-  },
-];
-
-const FILTERS = ["Все", ...new Set(CASES.map((item) => item.filter))];
+type CaseItem = {
+  id: string;
+  filter: string;
+  title: string;
+  district: string;
+  area: number;
+  hours: number;
+  crew: number;
+  price: string;
+  beforeBrief: string;
+  afterBrief: string;
+};
 
 export function BeforeAfterSection() {
-  const [filter, setFilter] = useState("Все");
-  const visible = filter === "Все" ? CASES : CASES.filter((item) => item.filter === filter);
+  const t = useTranslations("beforeAfter");
+  const cases = t.raw("cases") as CaseItem[];
+  const filterLabels = t.raw("filters") as Record<string, string>;
+  const filterKeys = ["all", ...Object.keys(filterLabels)];
+  const [filter, setFilter] = useState("all");
+
+  const visible =
+    filter === "all" ? cases : cases.filter((item) => item.filter === filter);
 
   return (
     <section id="cases" className="shell py-24 md:py-32">
       <Reveal>
-        <p className="eyebrow">Кейсы</p>
-        <h2 className="h2 mt-5 max-w-[22ch]">Разница, которую видно без слов</h2>
-        <p className="muted mt-5 max-w-[54ch]">
-          Реальные объекты в Алматы. Тот же ракурс, тот же свет, без обработки — и настоящая цена
-          каждой уборки.
-        </p>
+        <p className="eyebrow">{t("eyebrow")}</p>
+        <h2 className="h2 mt-5 max-w-[22ch]">{t("h2")}</h2>
+        <p className="muted mt-5 max-w-[54ch]">{t("sub")}</p>
       </Reveal>
 
       <div className="mt-10 flex flex-wrap gap-2">
-        {FILTERS.map((item) => (
+        {filterKeys.map((key) => (
           <button
-            key={item}
+            key={key}
             type="button"
-            onClick={() => setFilter(item)}
-            aria-pressed={filter === item}
+            onClick={() => setFilter(key)}
+            aria-pressed={filter === key}
             className={`hairline rounded-full px-4 py-2 text-sm transition-colors duration-300 ${
-              filter === item
+              filter === key
                 ? "border-transparent bg-[var(--color-obsidian)] text-[var(--color-linen)]"
                 : ""
             }`}
           >
-            {item}
+            {key === "all" ? t("all") : filterLabels[key]}
           </button>
         ))}
       </div>
@@ -94,17 +70,17 @@ export function BeforeAfterSection() {
             <dl className="eyebrow mt-4 flex flex-wrap gap-x-6 gap-y-1 text-[0.6rem]">
               {item.area > 0 && (
                 <div className="flex gap-1.5">
-                  <dt>Площадь</dt>
+                  <dt>{t("area")}</dt>
                   <dd className="nums text-[var(--fg)]">{item.area} м²</dd>
                 </div>
               )}
               <div className="flex gap-1.5">
-                <dt>Время</dt>
+                <dt>{t("time")}</dt>
                 <dd className="nums text-[var(--fg)]">{item.hours} ч</dd>
               </div>
               <div className="flex gap-1.5">
-                <dt>Команда</dt>
-                <dd className="nums text-[var(--fg)]">{item.crew} чел.</dd>
+                <dt>{t("crew")}</dt>
+                <dd className="nums text-[var(--fg)]">{item.crew}</dd>
               </div>
             </dl>
           </Reveal>
