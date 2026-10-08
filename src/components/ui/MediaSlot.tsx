@@ -1,18 +1,34 @@
+import Image from "next/image";
+
 /**
- * Слот под съёмку. Пока нет своего материала — показываем аккуратную заглушку
- * с техзаданием на кадр. Стоковые фото не используем принципиально.
+ * Слот под медиа. С `src` показывает картинку, без него — заглушку
+ * с техзаданием на кадр, пока нет своего материала.
  */
 export function MediaSlot({
   brief,
+  src,
+  alt = "",
+  sizes = "(min-width: 1024px) 26rem, 82vw",
   ratio = "4 / 3",
   className = "",
   tone = "cool",
 }: {
   brief: string;
+  src?: string;
+  alt?: string;
+  sizes?: string;
   ratio?: string;
   className?: string;
   tone?: "cool" | "warm";
 }) {
+  if (src) {
+    return (
+      <div className={`media-frame ${className}`} style={{ aspectRatio: ratio }}>
+        <Image src={src} alt={alt} fill sizes={sizes} className="object-cover" />
+      </div>
+    );
+  }
+
   return (
     <div className={`media-frame ${className}`} style={{ aspectRatio: ratio }}>
       <div

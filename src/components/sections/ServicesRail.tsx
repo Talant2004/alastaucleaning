@@ -15,7 +15,14 @@ type Card = {
   price: string;
   includes: readonly string[];
   brief: string;
+  image: string;
   addType?: CleaningTypeId;
+};
+
+const TYPE_IMAGES: Record<CleaningTypeId, string> = {
+  wet: "/media/service-wet.jpg",
+  general: "/media/service-general.jpg",
+  postRepair: "/media/service-postrepair.jpg",
 };
 
 const EXTRA_CARDS: Card[] = [
@@ -32,6 +39,7 @@ const EXTRA_CARDS: Card[] = [
       "Кресла от 5 000 ₸, стулья от 1 000 ₸",
     ],
     brief: "ВИДЕО: экстрактор снимает пятно с ткани, макро, замедление",
+    image: "/media/service-textile.jpg",
   },
   {
     id: "balcony",
@@ -46,6 +54,7 @@ const EXTRA_CARDS: Card[] = [
       "Балкон больше стандарта считаем по м²",
     ],
     brief: "ФОТО: чистый балкон против света, вид на город Алматы",
+    image: "/media/service-balcony.jpg",
   },
 ];
 
@@ -71,6 +80,7 @@ export function ServicesRail() {
         type.id === "postRepair"
           ? "ВИДЕО: строительная пыль под пылесосом, контровой свет"
           : "ВИДЕО: солнечный блик на чистом полу, тюль дышит",
+      image: TYPE_IMAGES[type.id],
       addType: type.id,
     })),
     ...EXTRA_CARDS,
@@ -135,7 +145,13 @@ function ServiceCard({
         <span className="eyebrow text-right text-[0.6rem]">{card.kz}</span>
       </div>
 
-      <MediaSlot brief={card.brief} ratio="16 / 10" className="mt-5" />
+      <MediaSlot
+        brief={card.brief}
+        src={card.image}
+        alt={card.title}
+        ratio="16 / 10"
+        className="mt-5"
+      />
 
       <h3 className="h3 mt-6">{card.title}</h3>
       <p className="muted mt-1 text-sm">{card.tagline}</p>

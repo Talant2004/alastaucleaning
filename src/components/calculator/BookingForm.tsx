@@ -18,7 +18,7 @@ export function BookingForm({ onClose }: { onClose: () => void }) {
 
   const [slots, setSlots] = useState<SlotsPayload>(initial);
   const [date, setDate] = useState(initial.days[0]?.iso ?? "");
-  const [time, setTime] = useState(initial.times[1] ?? initial.times[0] ?? "11:00");
+  const [pickedTime, setTime] = useState(initial.times[1] ?? initial.times[0] ?? "11:00");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
@@ -45,15 +45,9 @@ export function BookingForm({ onClose }: { onClose: () => void }) {
 
   const selectedDay: DayOption | undefined = slots.days.find((day) => day.iso === date);
   const timeOptions = selectedDay?.times?.length ? selectedDay.times : slots.times;
-  const timeOptionsKey = timeOptions.join("|");
-
-  useEffect(() => {
-    const options = timeOptionsKey.split("|").filter(Boolean);
-    if (!options.length) return;
-    if (!options.includes(time)) {
-      setTime(options[1] ?? options[0] ?? "11:00");
-    }
-  }, [time, timeOptionsKey]);
+  const time = timeOptions.includes(pickedTime)
+    ? pickedTime
+    : (timeOptions[1] ?? timeOptions[0] ?? pickedTime);
 
   const message = [
     whatsappText(),

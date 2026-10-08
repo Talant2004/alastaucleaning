@@ -159,7 +159,14 @@ export function AlastauSection() {
           </div>
 
           <div className="lg:pt-10">
-            <MediaSlot brief={t("filmBrief")} ratio="3 / 4" tone="warm" />
+            <MediaSlot
+              brief={t("filmBrief")}
+              src="/media/alastau.jpg"
+              alt={t("imageAlt")}
+              sizes="(min-width: 1024px) 40vw, 100vw"
+              ratio="3 / 4"
+              tone="warm"
+            />
             <p className="eyebrow mt-5 text-[0.6rem] leading-relaxed">{t("filmNote")}</p>
           </div>
         </div>

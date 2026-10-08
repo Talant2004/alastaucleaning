@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
 import { useLocale, useTranslations } from "next-intl";
@@ -49,23 +50,24 @@ export function HeroSection() {
     <section ref={ref} className="relative flex min-h-[100svh] flex-col justify-end overflow-hidden pb-10">
       <motion.div aria-hidden style={{ y, scale }} className="absolute inset-0 -z-10">
         <div className="absolute inset-0 bg-[var(--color-linen)]" />
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "radial-gradient(85% 65% at 72% 8%, #fffdf7 0%, color-mix(in oklab, var(--color-glacier-200) 55%, #fffdf7) 38%, transparent 70%)",
-          }}
+        <Image
+          src="/media/hero.jpg"
+          alt=""
+          fill
+          sizes="100vw"
+          fetchPriority="high"
+          className="object-cover object-[70%_center]"
         />
         <div
           className="absolute inset-0"
           style={{
             background:
-              "linear-gradient(196deg, transparent 34%, color-mix(in oklab, var(--color-sage-100) 70%, transparent) 62%, color-mix(in oklab, var(--color-sage-400) 30%, transparent) 100%)",
+              "linear-gradient(90deg, var(--color-linen) 0%, color-mix(in oklab, var(--color-linen) 82%, transparent) 38%, color-mix(in oklab, var(--color-linen) 25%, transparent) 75%, transparent 100%), linear-gradient(0deg, var(--color-linen) 0%, transparent 35%)",
           }}
         />
         <motion.div
           initial={{ opacity: 0 }}
-          animate={{ opacity: 0.55 }}
+          animate={{ opacity: 0.3 }}
           transition={{ duration: 2.4, ease: easeBrand }}
           className="absolute -top-40 right-[8%] h-[130%] w-[46%] rotate-12 blur-3xl"
           style={{

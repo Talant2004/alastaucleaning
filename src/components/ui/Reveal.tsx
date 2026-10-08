@@ -48,21 +48,29 @@ export function RevealLines({
 }) {
   const reduce = useReducedMotion();
 
+  // Наблюдаем за обёрткой: сама строка стартует за краем overflow-hidden,
+  // и IntersectionObserver никогда не считает её видимой.
   return (
-    <span className={className}>
+    <motion.span
+      className={`block ${className}`}
+      initial="hidden"
+      whileInView="show"
+      viewport={viewportOnce}
+    >
       {lines.map((line, i) => (
         <span key={line} className="block overflow-hidden py-[0.06em]">
           <motion.span
             className="block"
-            initial={reduce ? { opacity: 0 } : { y: "110%", opacity: 0 }}
-            whileInView={reduce ? { opacity: 1 } : { y: "0%", opacity: 1 }}
-            viewport={viewportOnce}
+            variants={{
+              hidden: reduce ? { opacity: 0 } : { y: "110%", opacity: 0 },
+              show: reduce ? { opacity: 1 } : { y: "0%", opacity: 1 },
+            }}
             transition={{ duration: 0.95, ease: easeBrand, delay: delay + i * 0.09 }}
           >
             {line}
           </motion.span>
         </span>
       ))}
-    </span>
+    </motion.span>
   );
 }
