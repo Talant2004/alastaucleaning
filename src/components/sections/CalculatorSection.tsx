@@ -18,6 +18,7 @@ import { WhatsAppButton, PhoneLink } from "@/components/contact/WhatsAppButton";
 
 export function CalculatorSection() {
   const t = useTranslations("calculator");
+  const tCards = useTranslations("services.cards");
   const locale = useLocale();
   const {
     state,
@@ -75,14 +76,15 @@ export function CalculatorSection() {
                         className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-[var(--color-ember-600)] to-[var(--color-ember-300)]"
                       />
                     )}
-                    <span className="eyebrow text-[0.58rem]">{locale === "kz" ? type.ru : type.kz}</span>
-                    <span className="h3 mt-2 block text-lg">
+                    <span className="h3 block text-lg">
                       {locale === "kz" ? type.kz : type.ru}
                     </span>
                     <span className="nums mt-3 block text-sm text-[var(--color-sage-600)]">
                       {pricing.perM2[type.id]} ₸ / м²
                     </span>
-                    <span className="muted mt-2 block text-xs">{type.tagline}</span>
+                    <span className="muted mt-2 block text-xs">
+                      {tCards(`${type.id}.tagline`)}
+                    </span>
                   </button>
                 );
               })}

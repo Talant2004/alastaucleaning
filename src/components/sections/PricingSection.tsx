@@ -7,6 +7,7 @@ import { Reveal } from "@/components/ui/Reveal";
 
 export function PricingSection() {
   const t = useTranslations("pricing");
+  const tCards = useTranslations("services.cards");
   const locale = useLocale();
   const { pricing } = useEstimate();
 
@@ -35,8 +36,7 @@ export function PricingSection() {
                 </span>
               )}
 
-              <span className="eyebrow text-[0.6rem]">{locale === "kz" ? type.ru : type.kz}</span>
-              <h3 className="h3 mt-2">{locale === "kz" ? type.kz : type.ru}</h3>
+              <h3 className="h3">{locale === "kz" ? type.kz : type.ru}</h3>
 
               <p className="nums mt-6 text-4xl">
                 {rate} ₸
@@ -47,7 +47,7 @@ export function PricingSection() {
               </p>
 
               <ul className="muted mt-7 flex-1 space-y-2.5 text-sm">
-                {type.includes.map((item) => (
+                {(tCards.raw(`${type.id}.includes`) as string[]).map((item) => (
                   <li key={item} className="flex gap-2.5">
                     <span
                       aria-hidden

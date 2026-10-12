@@ -3,60 +3,29 @@
 import { useRef } from "react";
 import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
 import { useLocale, useTranslations } from "next-intl";
-import { CLEANING_TYPES, type CleaningTypeId } from "@/lib/pricing";
+import { CLEANING_TYPES, isAlastauFree, type CleaningTypeId } from "@/lib/pricing";
 import { useEstimate } from "@/components/calculator/estimate-store";
 import { MediaSlot } from "@/components/ui/MediaSlot";
 
 type Card = {
   id: string;
   title: string;
-  kz: string;
   tagline: string;
   price: string;
-  includes: readonly string[];
-  brief: string;
+  includes: string[];
   image: string;
   addType?: CleaningTypeId;
 };
 
-const TYPE_IMAGES: Record<CleaningTypeId, string> = {
+type CardCopy = { title?: string; tagline: string; price?: string; includes: string[] };
+
+const IMAGES: Record<string, string> = {
   wet: "/media/service-wet.jpg",
   general: "/media/service-general.jpg",
   postRepair: "/media/service-postrepair.jpg",
+  textile: "/media/service-textile.jpg",
+  balcony: "/media/service-balcony.jpg",
 };
-
-const EXTRA_CARDS: Card[] = [
-  {
-    id: "textile",
-    title: "Химчистка мебели",
-    kz: "Жиһаз химтазалау",
-    tagline: "Диваны, матрасы, кресла, стулья",
-    price: "диван 13 000 ₸ · матрас 10 000 ₸",
-    includes: [
-      "Экстракторная чистка с горячей водой",
-      "Удаление запахов и следов животных",
-      "Сушка 4–6 часов, без разводов",
-      "Кресла от 5 000 ₸, стулья от 1 000 ₸",
-    ],
-    brief: "ВИДЕО: экстрактор снимает пятно с ткани, макро, замедление",
-    image: "/media/service-textile.jpg",
-  },
-  {
-    id: "balcony",
-    title: "Балкон",
-    kz: "Балкон",
-    tagline: "Фиксированная стоимость",
-    price: "5 000 ₸",
-    includes: [
-      "Мытьё остекления внутри",
-      "Пол, подоконник, откосы",
-      "Вынос и протирка хранимых вещей",
-      "Балкон больше стандарта считаем по м²",
-    ],
-    brief: "ФОТО: чистый балкон против света, вид на город Алматы",
-    image: "/media/service-balcony.jpg",
-  },
-];
 
 export function ServicesRail() {
   const t = useTranslations("services");
@@ -66,24 +35,27 @@ export function ServicesRail() {
   const { scrollYProgress } = useScroll({ target: wrapper, offset: ["start start", "end end"] });
   const x = useTransform(scrollYProgress, [0, 1], ["2%", "-64%"]);
 
-  const { setType } = useEstimate();
+  const { setType, pricing } = useEstimate();
+  const copy = t.raw("cards") as Record<string, CardCopy>;
 
   const cards: Card[] = [
     ...CLEANING_TYPES.map((type) => ({
       id: type.id,
       title: locale === "kz" ? type.kz : type.ru,
-      kz: type.kz,
-      tagline: type.tagline,
-      price: `${type.perM2} ₸ / м²`,
-      includes: type.includes,
-      brief:
-        type.id === "postRepair"
-          ? "ВИДЕО: строительная пыль под пылесосом, контровой свет"
-          : "ВИДЕО: солнечный блик на чистом полу, тюль дышит",
-      image: TYPE_IMAGES[type.id],
+      tagline: copy[type.id].tagline,
+      price: `${pricing.perM2[type.id]} ₸ / м²`,
+      includes: copy[type.id].includes,
+      image: IMAGES[type.id],
       addType: type.id,
     })),
-    ...EXTRA_CARDS,
+    ...(["textile", "balcony"] as const).map((id) => ({
+      id,
+      title: copy[id].title ?? "",
+      tagline: copy[id].tagline,
+      price: copy[id].price ?? "",
+      includes: copy[id].includes,
+      image: IMAGES[id],
+    })),
   ];
 
   const addToCalc = (type?: CleaningTypeId) => {
@@ -106,7 +78,14 @@ export function ServicesRail() {
             className="mt-10 flex gap-5 pl-[max(1.25rem,calc((100vw-1320px)/2+3.5rem))]"
           >
             {cards.map((card, index) => (
-              <ServiceCard key={card.id} card={card} index={index} onAdd={addToCalc} addLabel={t("addToCalc")} />
+              <ServiceCard
+                key={card.id}
+                card={card}
+                index={index}
+                onAdd={addToCalc}
+                addLabel={t("addToCalc")}
+                giftLabel={t("alastauGift")}
+              />
             ))}
           </motion.ul>
         </div>
@@ -119,7 +98,14 @@ export function ServicesRail() {
         </div>
         <ul className="flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-16">
           {cards.map((card, index) => (
-            <ServiceCard key={card.id} card={card} index={index} onAdd={addToCalc} addLabel={t("addToCalc")} />
+            <ServiceCard
+              key={card.id}
+              card={card}
+              index={index}
+              onAdd={addToCalc}
+              addLabel={t("addToCalc")}
+              giftLabel={t("alastauGift")}
+            />
           ))}
         </ul>
       </div>
@@ -132,21 +118,20 @@ function ServiceCard({
   index,
   onAdd,
   addLabel,
+  giftLabel,
 }: {
   card: Card;
   index: number;
   onAdd: (type?: CleaningTypeId) => void;
   addLabel: string;
+  giftLabel: string;
 }) {
   return (
     <li className="surface flex w-[82vw] shrink-0 snap-center flex-col p-6 sm:w-96 lg:w-[26rem]">
-      <div className="flex items-start justify-between">
-        <span className="font-display text-4xl text-[var(--color-brass)]">0{index + 1}</span>
-        <span className="eyebrow text-right text-[0.6rem]">{card.kz}</span>
-      </div>
+      <span className="font-display text-4xl text-[var(--color-brass)]">0{index + 1}</span>
 
       <MediaSlot
-        brief={card.brief}
+        brief=""
         src={card.image}
         alt={card.title}
         ratio="16 / 10"
@@ -165,6 +150,10 @@ function ServiceCard({
           </li>
         ))}
       </ul>
+
+      {card.addType && isAlastauFree(card.addType) && (
+        <p className="mt-5 text-sm text-[var(--color-ember-500)]">{giftLabel}</p>
+      )}
 
       <button type="button" onClick={() => onAdd(card.addType)} className="btn btn-ghost mt-7 w-full">
         {addLabel}

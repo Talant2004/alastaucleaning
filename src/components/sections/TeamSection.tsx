@@ -2,16 +2,14 @@
 
 import { useTranslations } from "next-intl";
 import { Reveal } from "@/components/ui/Reveal";
-import { MediaSlot } from "@/components/ui/MediaSlot";
 
-type Person = { name: string; role: string; years: number; jobs: number; rating: string };
 type CheckItem = { zone: string; points: number; sample: string };
-type ChemItem = { title: string; note: string };
+type Note = { title: string; note: string };
+type ChemItem = Note;
 
 export function TeamSection() {
   const t = useTranslations("team");
-  const people = t.raw("people") as Person[];
-  const badges = t.raw("badges") as string[];
+  const checks = t.raw("checks") as Note[];
   const checklist = t.raw("checklist") as CheckItem[];
   const chemistry = t.raw("chemistry") as ChemItem[];
 
@@ -24,40 +22,11 @@ export function TeamSection() {
       </Reveal>
 
       <ul className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {people.map((person, index) => (
-          <Reveal as="li" key={person.name} index={index} className="surface overflow-hidden p-4">
-            <MediaSlot
-              brief={`ПОРТРЕТ: ${person.name}`}
-              ratio="3 / 4"
-            />
-            <h3 className="h3 mt-5 text-lg">{person.name}</h3>
-            <p className="muted mt-1 text-xs">{person.role}</p>
-
-            <dl className="nums mt-4 flex gap-4 text-xs">
-              <div>
-                <dt className="eyebrow text-[0.55rem]">{t("years")}</dt>
-                <dd>{t("yearsUnit", { n: person.years })}</dd>
-              </div>
-              <div>
-                <dt className="eyebrow text-[0.55rem]">{t("jobs")}</dt>
-                <dd>{person.jobs}</dd>
-              </div>
-              <div>
-                <dt className="eyebrow text-[0.55rem]">{t("rating")}</dt>
-                <dd>{person.rating} ★</dd>
-              </div>
-            </dl>
-
-            <ul className="mt-4 flex flex-wrap gap-1.5">
-              {badges.map((badge) => (
-                <li
-                  key={badge}
-                  className="eyebrow rounded-full border border-[color-mix(in_oklab,var(--color-brass)_50%,transparent)] px-2.5 py-1 text-[0.5rem]"
-                >
-                  {badge}
-                </li>
-              ))}
-            </ul>
+        {checks.map((item, index) => (
+          <Reveal as="li" key={item.title} index={index} className="surface p-6">
+            <span className="font-display text-3xl text-[var(--color-brass)]">0{index + 1}</span>
+            <h3 className="h3 mt-4 text-lg">{item.title}</h3>
+            <p className="muted mt-2 text-sm">{item.note}</p>
           </Reveal>
         ))}
       </ul>

@@ -6,7 +6,6 @@ import { motion, useReducedMotion, useScroll, useTransform } from "motion/react"
 import { useLocale, useTranslations } from "next-intl";
 import { CONTACT } from "@/lib/contact";
 import { easeBrand } from "@/lib/motion";
-import { FALLBACK_SLOT_CAPACITY } from "@/lib/slots";
 import { RevealLines } from "@/components/ui/Reveal";
 import { WhatsAppButton } from "@/components/contact/WhatsAppButton";
 
@@ -14,23 +13,22 @@ export function HeroSection() {
   const t = useTranslations("hero");
   const locale = useLocale();
   const ref = useRef<HTMLElement>(null);
-  const [slotCapacity, setSlotCapacity] = useState(FALLBACK_SLOT_CAPACITY);
+  const [slotCapacity, setSlotCapacity] = useState<{ free: number; total: number } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
 
+    // Без реальных данных из админки плашку со слотами не показываем
     void fetch(`/api/slots?locale=${locale}`)
       .then((res) => (res.ok ? res.json() : null))
-      .then((data: { free?: number; total?: number } | null) => {
-        if (cancelled || !data) return;
+      .then((data: { free?: number; total?: number; source?: string } | null) => {
+        if (cancelled || !data || data.source !== "firestore") return;
         const free = Number(data.free);
         const total = Number(data.total);
         if (!Number.isFinite(free) || !Number.isFinite(total)) return;
         setSlotCapacity({ free: Math.max(0, Math.round(free)), total: Math.max(0, Math.round(total)) });
       })
-      .catch(() => {
-        /* оставляем фолбэк 3 из 14 */
-      });
+      .catch(() => {});
 
     return () => {
       cancelled = true;
@@ -150,18 +148,18 @@ export function HeroSection() {
         </motion.ul>
       </motion.div>
 
-      <motion.aside
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.9, ease: easeBrand, delay: 1.1 }}
-        className="glass shell pointer-events-none mt-10 hidden rounded-[var(--radius-card)] px-6 py-4 lg:mx-auto lg:mt-0 lg:block lg:w-auto lg:max-w-xs lg:self-end"
-      >
-        <p className="eyebrow text-[0.6rem]">{t("slotsEyebrow")}</p>
-        <p className="nums mt-1 text-2xl">
-          {slotCapacity.free} из {slotCapacity.total}
-        </p>
-        <p className="muted mt-1 text-xs">{t("slotsNote")}</p>
-      </motion.aside>
+      {slotCapacity && (
+        <motion.aside
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.9, ease: easeBrand }}
+          className="glass shell pointer-events-none mt-10 hidden rounded-[var(--radius-card)] px-6 py-4 lg:mx-auto lg:mt-0 lg:block lg:w-auto lg:max-w-xs lg:self-end"
+        >
+          <p className="eyebrow text-[0.6rem]">{t("slotsEyebrow")}</p>
+          <p className="nums mt-1 text-2xl">{t("slotsCount", slotCapacity)}</p>
+          <p className="muted mt-1 text-xs">{t("slotsNote")}</p>
+        </motion.aside>
+      )}
     </section>
   );
 }

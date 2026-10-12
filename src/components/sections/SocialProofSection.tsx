@@ -10,26 +10,18 @@ type Testimonial = { name: string; context: string; quote: string };
 export function SocialProofSection() {
   const t = useTranslations("socialProof");
   const guarantees = t.raw("guarantees") as Guarantee[];
-  const fallback = t.raw("testimonials") as Testimonial[];
-  const [testimonials, setTestimonials] = useState(fallback);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
 
+  // Отзывы показываем только опубликованные в админке — никаких заглушек
   useEffect(() => {
     let cancelled = false;
     void fetch("/api/reviews")
       .then((res) => (res.ok ? res.json() : null))
       .then((data: { reviews?: Testimonial[] } | null) => {
         if (cancelled || !data?.reviews?.length) return;
-        setTestimonials(
-          data.reviews.map((item) => ({
-            name: item.name,
-            context: item.context,
-            quote: item.quote,
-          })),
-        );
+        setTestimonials(data.reviews);
       })
-      .catch(() => {
-        /* оставляем тексты из messages */
-      });
+      .catch(() => {});
     return () => {
       cancelled = true;
     };
@@ -41,43 +33,12 @@ export function SocialProofSection() {
         <Reveal>
           <p className="eyebrow">{t("eyebrow")}</p>
           <h2 className="h2 mt-5 max-w-[20ch]">{t("h2")}</h2>
+          <p className="muted mt-5 max-w-[54ch]">{t("sub")}</p>
         </Reveal>
 
-        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Reveal className="surface flex flex-col justify-between p-6">
-            <p className="eyebrow text-[0.6rem]">{t("ratingLabel")}</p>
-            <p className="nums mt-6 text-5xl">4.9</p>
-            <p className="muted mt-2 text-xs">{t("ratingNote")}</p>
-            <p className="eyebrow mt-6 text-[0.55rem] leading-relaxed">{t("ratingHint")}</p>
-          </Reveal>
-
-          {testimonials.map((item, index) => (
-            <Reveal as="article" key={`${item.name}-${index}`} index={index + 1} className="surface flex flex-col p-6">
-              <div className="flex items-center gap-3">
-                <span
-                  aria-hidden
-                  className="grid size-11 shrink-0 place-items-center rounded-full border border-[color-mix(in_oklab,var(--color-brass)_50%,transparent)] text-sm"
-                >
-                  {item.name.slice(0, 1)}
-                </span>
-                <div className="min-w-0">
-                  <p className="text-sm font-medium">{item.name}</p>
-                  <p className="muted truncate text-xs">{item.context}</p>
-                </div>
-              </div>
-
-              <blockquote className="muted mt-5 flex-1 text-sm leading-relaxed">
-                «{item.quote}»
-              </blockquote>
-
-              <p className="eyebrow mt-5 text-[0.55rem]">{t("videoPlaceholder")}</p>
-            </Reveal>
-          ))}
-        </div>
-
-        <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <ul className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {guarantees.map((item, index) => (
-            <Reveal as="li" key={item.title} index={index} className="flex gap-3 py-2">
+            <Reveal as="li" key={item.title} index={index} className="surface flex gap-3 p-6">
               <svg
                 viewBox="0 0 24 24"
                 aria-hidden
@@ -89,12 +50,34 @@ export function SocialProofSection() {
                 <path d="m8.5 12.4 2.6 2.6 5-5.4" />
               </svg>
               <div>
-                <p className="text-sm">{item.title}</p>
-                <p className="muted text-xs">{item.note}</p>
+                <p className="text-sm font-medium">{item.title}</p>
+                <p className="muted mt-1 text-sm">{item.note}</p>
               </div>
             </Reveal>
           ))}
         </ul>
+
+        {testimonials.length > 0 && (
+          <>
+            <h3 className="h3 mt-16">{t("reviewsTitle")}</h3>
+            <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {testimonials.map((item, index) => (
+                <Reveal
+                  as="article"
+                  key={`${item.name}-${index}`}
+                  index={index}
+                  className="surface flex flex-col p-6"
+                >
+                  <p className="text-sm font-medium">{item.name}</p>
+                  {item.context ? <p className="muted text-xs">{item.context}</p> : null}
+                  <blockquote className="muted mt-4 flex-1 text-sm leading-relaxed">
+                    «{item.quote}»
+                  </blockquote>
+                </Reveal>
+              ))}
+            </div>
+          </>
+        )}
       </div>
     </section>
   );

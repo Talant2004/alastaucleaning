@@ -19,7 +19,6 @@ export function SiteHeader() {
     { href: "#services", label: t("services") },
     { href: "#alastau", label: t("alastau") },
     { href: "#calc", label: t("prices") },
-    { href: "#cases", label: t("cases") },
     { href: "#team", label: t("team") },
     { href: "#faq", label: t("faq") },
   ];
